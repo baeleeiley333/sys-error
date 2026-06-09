@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="/style.css">
+  </head>
+
+  <body>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humanity Verify - True Puzzle</title>
+    <style>
+        :root {
+            --bg-color: #f0f0f0;
+            --dot-color: #ccc;
+            --panel-bg: #fff;
+            --text-color: #000;
+            --accent-red: #ff4444;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+            user-select: none;
+        }
+
+        #verification-stage {
+            width: 800px; height: 600px;
+            background: #000; padding: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: auto 1fr auto;
+            gap: 10px;
+        }
+
+        header {
+            grid-column: 1 / 3;
+            color: var(--panel-bg); padding: 10px;
+            display: flex; flex-direction: column;
+        }
+
+        #sys-title { font-size: 20px; font-weight: bold; letter-spacing: 2px;}
+        #sys-subtitle { font-size: 10px; color: #888; }
+        #prompt-text { font-size: 14px; color: var(--accent-red); margin-top: 5px;}
+
+        aside#user-panel {
+            grid-column: 2 / 3; grid-row: 2 / 4;
+            width: 150px; color: #000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+        }
+
+        #user-avatar-container {
+            width: 100px; height: 100px; border-radius: 50%;
+            overflow: hidden; border: 4px solid var(--panel-bg);
+            background: #444; margin-top: 20px;
+        }
+
+        #id-tag {
+            background: var(--accent-red); color: white;
+            font-size: 12px; padding: 5px 10px; border-radius: 4px; font-weight: bold;
+        }
+
+        /* 拼图舞台：固定大小，确保背景切片精准对齐 */
+        main#puzzle-area {
+            grid-column: 1 / 2; grid-row: 2 / 3;
+            background: var(--panel-bg); border: 4px solid #000;
+            position: relative; display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            grid-template-rows: repeat(3, 1fr);
+            overflow: hidden;
+            width: 610px; height: 440px; /* 固定长宽比，匹配摄像头画面 */
+        }
+
+        .puzzle-piece {
+            width: 100%; height: 100%;
+            border: 1px solid rgba(0,0,0,0.4);
+            position: relative; cursor: grab; transition: all 0.2s ease;
+            box-sizing: border-box;
+            /* 关键：强制背景图片大小填满整个 3x3 的大舞台，而不是填满单个小格子 */
+            background-size: 610px 440px; 
+            background-repeat: no-repeat;
+        }
+
+        .puzzle-piece:active { cursor: grabbing; }
+
+        .puzzle-piece.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .puzzle-piece.drag-over {
+            border: 3px solid var(--accent-red);
+        }
+
+        .puzzle-piece span {
+            position: absolute; top: 5px; right: 5px;
+            color: white; font-size: 12px; background: rgba(0,0,0,0.6); padding: 2px 6px;
+            font-weight: bold; pointer-events: none;
+        }
+
+        footer#controls {
+            grid-column: 1 / 2; grid-row: 3 / 4;
+            background: var(--panel-bg); border: 4px solid #000;
+            padding: 10px; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+
+        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #333; }
+        #verify-btn { background: #000; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        #video-feed, #capture-canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="verification-stage">
+    <header>
+        <div id="sys-subtitle">VISUAL VERIFY</div>
+        <div id="sys-title">HUMANITY DETECTION SYSTEM</div>
+        <div id="prompt-text">! SYSTEM READY. INITIALIZING CAMERA...</div>
+    </header>
+
+    <main id="puzzle-area">
+        <div style="grid-column: 1/4; grid-row: 1/4; display: flex; justify-content: center; align-items: center; color: #aaa; font-weight: bold;">
+            等待摄像头启动...
+        </div>
+    </main>
+
+    <footer id="controls">
+        <div style="display:flex; gap: 10px;">
+            <button class="icon-btn" onclick="location.reload()">↺</button>
+            <button class="icon-btn">☒</button>
+            <button class="icon-btn">⚙</button>
+            <button class="icon-btn" id="camera-btn">📷</button>
+        </div>
+        <button id="verify-btn">VERIFY</button>
+    </footer>
+
+    <aside id="user-panel">
+        <div id="user-avatar-container">
+            <video id="avatar-video" autoplay playsinline style="width:100%; height:100%; object-fit:cover; transform: scaleX(-1);"></video>
+            <img id="user-avatar" src="" style="width:100%; height:100%; object-fit:cover; display:none;" alt="User">
+        </div>
+        <div id="id-tag">ID: 1984_AGENT</div>
+    </aside>
+</div>
+
+<video id="video-feed" autoplay playsinline style="transform: scaleX(-1);"></video>
+<canvas id="capture-canvas" width="610" height="440"></canvas>
+
+<script>
+    const video = document.getElementById('video-feed');
+    const avatarVideo = document.getElementById('avatar-video');
+    const canvas = document.getElementById('capture-canvas');
+    const puzzleArea = document.getElementById('puzzle-area');
+    const cameraBtn = document.getElementById('camera-btn');
+    const userAvatar = document.getElementById('user-avatar');
+    const verifyBtn = document.getElementById('verify-btn');
+    const promptText = document.getElementById('prompt-text');
+
+    let capturedImage = null;
+    let piecesData = []; 
+    const gridSize = 3;
+
+    // 启动摄像头
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+            video.srcObject = stream;
+            avatarVideo.srcObject = stream;
+            promptText.innerText = "! CAMERA CONNECTED. CLICK 📷 TO CAPTURE & SCRAMBLE.";
+            puzzleArea.innerHTML = '<div style="grid-column: 1/4; grid-row: 1/4; display: flex; justify-content: center; align-items: center; color: #555; font-size:18px; font-weight:bold;">LOOK HERE & CLICK 📷 BUTTON</div>';
+        } catch (err) {
+            promptText.innerText = "Error: Camera access denied.";
+        }
+    }
+
+    // 拍照
+    cameraBtn.addEventListener('click', () => {
+        if (!video.srcObject) return;
+
+        const ctx = canvas.getContext('2d');
+        // 镜像翻转，符合直觉
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        capturedImage = canvas.toDataURL('image/jpeg');
+        avatarVideo.style.display = 'none';
+        userAvatar.style.display = 'block';
+        userAvatar.src = capturedImage;
+
+        initPuzzleGame();
+    });
+
+    // 初始化真正的拆分九宫格
+    function initPuzzleGame() {
+        puzzleArea.innerHTML = '';
+        piecesData = [];
+
+        // 1. 生成 0-8 的随机不重复乱序数组
+        let randomOrder = [];
+        for (let i = 0; i < gridSize * gridSize; i++) randomOrder.push(i);
+        do {
+            randomOrder.sort(() => Math.random() - 0.5);
+        } while (isAlreadySorted(randomOrder));
+
+        promptText.innerText = "⚠️ WARNING: HUMAN FACE FRAGMENTED. DRAG PIECES TO RESTORE THE ORIGINAL IMAGE.";
+        verifyBtn.style.background = '#000';
+        verifyBtn.style.color = '#fff';
+        verifyBtn.innerText = "VERIFYING...";
+
+        // 2. 按照乱序渲染九宫格格子
+        for (let i = 0; i < gridSize * gridSize; i++) {
+            const currentGridPosition = i; // 当前在屏幕上的格子位置 (0 到 8)
+            const pieceImageIndex = randomOrder[i]; // 当前格子应该显示的“图片碎片索引” (0 到 8)
+
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.style.backgroundImage = `url(${capturedImage})`;
+            
+            // 核心修复：计算该图片索引在原图上的绝对像素偏移
+            // 每一块的宽度 = 610/3 ≈ 203.33px, 高度 = 440/3 ≈ 146.66px
+            const pieceWidth = 610 / gridSize;
+            const pieceHeight = 440 / gridSize;
+            const originalX = (pieceImageIndex % gridSize) * pieceWidth;
+            const originalY = Math.floor(pieceImageIndex / gridSize) * pieceHeight;
+            
+            // 用负值把对应的原图区域“拉”到当前的格子里
+            piece.style.backgroundPosition = `-${originalX}px -${originalY}px`;
+            
+            // 右上角数字
+            const span = document.createElement('span');
+            span.innerText = pieceImageIndex + 1;
+            piece.appendChild(span);
+
+            // 原生拖拽属性
+            piece.setAttribute('draggable', 'true');
+            piece.dataset.index = currentGridPosition;
+
+            addDragListeners(piece);
+            puzzleArea.appendChild(piece);
+
+            // 数组记录：当前格子放了哪张碎片
+            piecesData.push({ element: piece, correctIndex: pieceImageIndex });
+        }
+    }
+
+    function isAlreadySorted(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            if (arr[i] > arr[i+1]) return false;
+        }
+        return true;
+    }
+
+    // 拖拽逻辑
+    let draggedElement = null;
+
+    function addDragListeners(element) {
+        element.addEventListener('dragstart', (e) => {
+            draggedElement = element;
+            element.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', element.dataset.index);
+        });
+
+        element.addEventListener('dragend', () => {
+            element.classList.remove('dragging');
+            document.querySelectorAll('.puzzle-piece').forEach(p => p.classList.remove('drag-over'));
+        });
+
+        element.addEventListener('dragover', (e) => { e.preventDefault(); });
+
+        element.addEventListener('dragenter', () => {
+            if (element !== draggedElement) element.classList.add('drag-over');
+        });
+
+        element.addEventListener('dragleave', () => { element.classList.remove('drag-over'); });
+
+        element.addEventListener('drop', (e) => {
+            e.preventDefault();
+            element.classList.remove('drag-over');
+            if (element === draggedElement) return;
+
+            const sourcePos = draggedElement.dataset.index;
+            const targetPos = element.dataset.index;
+
+            // 互换真实数据
+            const tempIndex = piecesData[sourcePos].correctIndex;
+            piecesData[sourcePos].correctIndex = piecesData[targetPos].correctIndex;
+            piecesData[targetPos].correctIndex = tempIndex;
+
+            // 互换视觉呈现
+            updatePieceVisual(draggedElement, piecesData[sourcePos].correctIndex);
+            updatePieceVisual(element, piecesData[targetPos].correctIndex);
+
+            // 检查是否通关
+            checkGameResult();
+        });
+    }
+
+    // 更新格子的切片定位
+    function updatePieceVisual(el, imgIndex) {
+        const pieceWidth = 610 / gridSize;
+        const pieceHeight = 440 / gridSize;
+        const originalX = (imgIndex % gridSize) * pieceWidth;
+        const originalY = Math.floor(imgIndex / gridSize) * pieceHeight;
+        
+        el.style.backgroundPosition = `-${originalX}px -${originalY}px`;
+        el.querySelector('span').innerText = imgIndex + 1;
+    }
+
+    // 验证结果
+    function checkGameResult() {
+        let isWin = true;
+        for (let i = 0; i < piecesData.length; i++) {
+            if (i !== piecesData[i].correctIndex) {
+                isWin = false;
+                break;
+            }
+        }
+
+        if (isWin) {
+            promptText.innerText = "✔ SUCCESS: HUMAN IDENTITY CONFIRMED! INTEGRITY 100%.";
+            verifyBtn.style.background = '#44ff44';
+            verifyBtn.style.color = '#000';
+            verifyBtn.innerText = "PASSED";
+
+            // 融合特效：移除所有黑边网格线和数字，无缝还原完美照片
+            document.querySelectorAll('.puzzle-piece').forEach(p => {
+                p.style.border = 'none';
+                p.setAttribute('draggable', 'false');
+                if (p.querySelector('span')) p.querySelector('span').remove();
+            });
+        }
+    }
+
+    startCamera();
+</script>
+</body>
+</html>
+
+    <script src="/script.js"></script>
+  </body>
+
+</html>
