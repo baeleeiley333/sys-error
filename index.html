@@ -19,8 +19,8 @@
       <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">📄</span><span>Internet Document</span></div>
       <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">🖧</span><span>Network Neighborhood</span></div>
       <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">⚙️</span><span>Control Panel</span></div>
-      <div class="xp-icon xp-icon-interactive" id="game-icon" role="button" tabindex="0" aria-label="Open Visual System 95">
-        <span class="xp-icon-glyph">🧩</span><span>Visual System 95</span>
+      <div class="xp-icon xp-icon-interactive" id="game-icon" role="button" tabindex="0" aria-label="Open Relationship Puzzle">
+        <img class="xp-icon-image" src="assets/gameicon.png" alt="" />
       </div>
     </div>
 
@@ -42,69 +42,16 @@
         <span>File</span><span>Verify</span><span>Players</span><span>Help</span>
       </div>
 
-      <!-- ============ SCREEN: WELCOME WIZARD ============ -->
+      <!-- ============ SCREEN: WELCOME (clippy-scene.jpg, 1:1) ============ -->
       <section class="screen" id="screen-welcome">
-        <div class="wizard-box">
-          <div class="wizard-titlebar">
-            <span class="wizard-titlebar-icon">🖥️</span>
-            <span>rentry.co/oldweb</span>
-            <div class="wizard-titlebar-btns"><span id="btn-wizard-cancel-x">✕</span></div>
-          </div>
-          <div class="wizard-body">
-            <div class="wizard-sidebar">
-              <div class="wizard-sidebar-icon">🖥️</div>
-              <div class="wizard-sidebar-row"><span>📞</span><span>📝</span></div>
-              <div class="wizard-globe">
-                <span class="wizard-dot" style="left:28%;top:18%"></span>
-                <span class="wizard-dot" style="left:62%;top:28%"></span>
-                <span class="wizard-dot" style="left:42%;top:48%"></span>
-                <span class="wizard-dot" style="left:70%;top:62%"></span>
-                <span class="wizard-dot" style="left:22%;top:66%"></span>
-                <span class="wizard-dot" style="left:52%;top:76%"></span>
-              </div>
-            </div>
-            <div class="wizard-content">
-              <h2>Welcome To <span class="wizard-accent">Relationship&#8209;Triggered Visual System 95</span></h2>
-              <p>An interactive artwork that transforms human connection into real-time visuals.</p>
-              <p>When two people come close, the system is triggered. Distance data is captured, visualized, and
-                expressed through generative graphics and sound.</p>
-              <p>It's not just about distance — it's about presence.</p>
-              <span class="wizard-link">View our concept!</span>
-              <div class="wizard-badges">
-                <div class="wizard-badge">
-                  <span class="badge-bars"><i></i><i></i><i></i><i></i></span>
-                  <span>Best Viewed<br />800 x 600</span>
-                </div>
-                <div class="wizard-badge">
-                  <span class="badge-play">▶</span>
-                  <span>GET<br />Windows Media Player</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="wizard-footer">
-            <button class="xp-action-btn xp-action-btn-secondary" disabled>Help</button>
-            <button class="xp-action-btn xp-action-btn-secondary" disabled>&lt; Back</button>
-            <button class="xp-action-btn" id="btn-wizard-next">Next &gt;</button>
-            <button class="xp-action-btn xp-action-btn-secondary" id="btn-wizard-cancel">Cancel</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ SCREEN: CONSENT (Clippy) ============ -->
-      <section class="screen" id="screen-consent" hidden>
-        <div class="clippy-scene">
-          <img class="clippy-figure" src="assets/clippy.png" alt="Clippy" />
-          <div class="clippy-bubble">
-            <p><strong>It looks like you're about to play a 9-tile photo duel!</strong></p>
-            <p>All content from the camera is processed only in your browser. Nothing is uploaded. Nothing is
-              stored — every frame is discarded the instant the round ends.</p>
-            <p class="msgbox-small">By clicking START you agree to enable your camera for this game.</p>
-            <div class="clippy-actions">
-              <button id="btn-consent-agree" class="xp-action-btn">✔ START</button>
-              <button id="btn-consent-decline" class="xp-action-btn xp-action-btn-secondary">Cancel</button>
-            </div>
-          </div>
+        <div class="image-screen">
+          <img src="assets/clippy-scene.jpg" alt="Welcome to Relationship-Triggered Visual System 95" />
+          <button class="image-hotspot" id="btn-wizard-next" aria-label="Next"
+            style="left:55.6%;top:73.2%;width:10.7%;height:4.1%;"></button>
+          <button class="image-hotspot" id="btn-wizard-cancel" aria-label="Cancel"
+            style="left:67.6%;top:73.4%;width:10.7%;height:3.6%;"></button>
+          <button class="image-hotspot" id="btn-wizard-cancel-x" aria-label="Close"
+            style="left:77.6%;top:20.9%;width:2.0%;height:2.2%;"></button>
         </div>
       </section>
 
@@ -172,10 +119,17 @@
         <div id="countdown-number">3</div>
       </section>
 
-      <!-- ============ SCREEN: GAME START ============ -->
-      <section class="screen pixel-screen" id="screen-gamestart" hidden>
-        <div id="gamestart-text">GAME<br />START</div>
-        <div id="gamestart-sub">9-TILE PHOTO DUEL</div>
+      <!-- ============ SCREEN: GAME START (gamestart.jpg, 1:1) ============ -->
+      <section class="screen" id="screen-gamestart" hidden>
+        <div class="image-screen image-screen-square">
+          <img src="assets/gamestart.jpg" alt="Relationship Puzzle" />
+          <button class="image-hotspot" id="btn-gamestart-start" aria-label="Start"
+            style="left:35.5%;top:79.7%;width:28.3%;height:6.0%;"></button>
+          <button class="image-hotspot" id="btn-gamestart-exit" aria-label="Exit"
+            style="left:75.0%;top:80.5%;width:14.4%;height:4.4%;"></button>
+          <button class="image-hotspot" id="btn-gamestart-close" aria-label="Close"
+            style="left:90.0%;top:5.2%;width:2.2%;height:2.4%;"></button>
+        </div>
       </section>
 
       <!-- ============ SCREEN: VS INTRO ============ -->

@@ -36,11 +36,10 @@
   // ---------------------------------------------------------
   const screens = {
     welcome: $('screen-welcome'),
-    consent: $('screen-consent'),
+    gamestart: $('screen-gamestart'),
     capture: $('screen-capture'),
     scan: $('screen-scan'),
     countdown: $('screen-countdown'),
-    gamestart: $('screen-gamestart'),
     vs: $('screen-vs'),
     duel: $('screen-duel'),
     judge: $('screen-judge'),
@@ -108,7 +107,8 @@
   }
 
   // ---------------------------------------------------------
-  // Desktop icon -> opens the app window on the welcome wizard
+  // Desktop icon -> opens the app window on the welcome screen
+  // (1:1 reference images: clippy-scene.jpg -> gamestart.jpg -> capture)
   // ---------------------------------------------------------
   function openGameWindow() {
     $('xp-window').hidden = false;
@@ -125,23 +125,16 @@
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGameWindow(); }
   });
 
-  $('btn-wizard-next').addEventListener('click', () => showScreen('consent'));
+  $('btn-wizard-next').addEventListener('click', () => showScreen('gamestart'));
   $('btn-wizard-cancel').addEventListener('click', closeGameWindow);
   $('btn-wizard-cancel-x').addEventListener('click', closeGameWindow);
 
-  // ---------------------------------------------------------
-  // Consent screen
-  // ---------------------------------------------------------
-  $('btn-consent-agree').addEventListener('click', onConsentAgree);
-  $('btn-consent-decline').addEventListener('click', () => {
-    $('btn-consent-agree').closest('.clippy-bubble').insertAdjacentHTML(
-      'beforeend', '<p class="msgbox-small" style="color:#c00 !important;">Camera access declined — click START any time to try again.</p>'
-    );
+  $('btn-gamestart-start').addEventListener('click', () => {
+    playGameStartFanfare();
+    enterCaptureScreen();
   });
-
-  async function onConsentAgree() {
-    await enterCaptureScreen();
-  }
+  $('btn-gamestart-exit').addEventListener('click', closeGameWindow);
+  $('btn-gamestart-close').addEventListener('click', closeGameWindow);
 
   // ---------------------------------------------------------
   // Capture screen — auto-captures when both players hold up a
@@ -599,21 +592,13 @@
   }
 
   // ---------------------------------------------------------
-  // Pixel arcade sequence: GAME START -> VS -> P1 turn -> P2 turn -> JUDGE
+  // Pixel arcade sequence: VS -> P1 turn -> P2 turn -> JUDGE
   // ---------------------------------------------------------
   async function startPixelSequence() {
-    await showGameStart();
     await showVsScreen();
     await runPlayerTurn(1);
     await runPlayerTurn(2);
     await showJudge();
-  }
-
-  async function showGameStart() {
-    showScreen('gamestart');
-    restartAnimation($('gamestart-text'));
-    playGameStartFanfare();
-    await sleep(1600);
   }
 
   async function showVsScreen() {
