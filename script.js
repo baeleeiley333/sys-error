@@ -87,6 +87,19 @@
   const playGameStartFanfare = () => [392, 523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.16, 'square', 0.13), i * 90));
   const playVsSting = () => [220, 174].forEach((f, i) => setTimeout(() => beep(f, 0.22, 'sawtooth', 0.1), i * 130));
 
+  function speak(text, opts = {}) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = opts.rate || 1.0;
+      u.pitch = opts.pitch || 1.0;
+      u.volume = opts.volume ?? 1.0;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* speech synthesis not available, ignore */ }
+  }
+
   // ---------------------------------------------------------
   // Camera
   // ---------------------------------------------------------
@@ -691,17 +704,70 @@
     $('judge-bubble-text').textContent = text;
   }
 
+  function spawnConfetti(count = 46) {
+    const container = $('judge-confetti');
+    container.innerHTML = '';
+    const colors = ['#ffd23f', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f38181', '#aa96da'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDelay = (Math.random() * 0.4) + 's';
+      piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+      piece.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+      container.appendChild(piece);
+    }
+  }
+
+  function shakeStage() {
+    const stage = $('judge-stage');
+    stage.classList.remove('shake');
+    void stage.offsetWidth;
+    stage.classList.add('shake');
+  }
+
+  function flashScreen() {
+    const flash = $('judge-flash');
+    flash.classList.remove('flash');
+    void flash.offsetWidth;
+    flash.classList.add('flash');
+  }
+
   function resetJudgeVisualState() {
     [1, 2].forEach((p) => {
       $('judge-avatar-' + p).classList.remove('winner', 'loser');
       $('judge-crown-' + p).classList.remove('show');
     });
     document.querySelectorAll('.squash-dog').forEach((el) => el.classList.remove('show'));
+    document.querySelectorAll('.judge-avatar-slot').forEach((el) => el.classList.remove('winner-slot'));
     const dog = $('judge-dog');
     dog.style.opacity = '1';
     dog.classList.remove('bounce');
     $('judge-bubble').style.opacity = '0';
+    $('judge-confetti').innerHTML = '';
+    $('judge-winner-banner').classList.remove('show');
+    $('judge-winner-text').textContent = '';
+    $('judge-epilogue').hidden = true;
+    $('epilogue-status').hidden = false;
+    $('epilogue-status').classList.remove('fade-out');
+    $('epilogue-teaser').hidden = true;
     $('btn-play-again').hidden = true;
+    try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+  }
+
+  async function showEpilogue() {
+    const epilogue = $('judge-epilogue');
+    epilogue.hidden = false;
+    speak('Relationship status: teammates!');
+    await sleep(2200);
+
+    $('epilogue-status').classList.add('fade-out');
+    await sleep(500);
+    $('epilogue-status').hidden = true;
+    $('epilogue-teaser').hidden = false;
+    speak('To be continued. Level two, incoming.');
+    await sleep(2200);
   }
 
   async function showJudge() {
@@ -730,7 +796,14 @@
     $('judge-avatar-' + winner).classList.add('winner');
     $('judge-crown-' + winner).classList.add('show');
     $('judge-avatar-' + loser).classList.add('loser');
+    $('judge-avatar-' + winner).closest('.judge-avatar-slot').classList.add('winner-slot');
+    $('judge-winner-text').textContent = `PLAYER ${winner} WINS!`;
+    $('judge-winner-banner').classList.add('show');
+    flashScreen();
+    shakeStage();
+    spawnConfetti();
     playWinFanfare();
+    speak(`Player ${winner} wins!`);
     await sleep(400);
 
     dog.classList.remove('bounce');
@@ -739,7 +812,9 @@
     const squashDog = $('judge-avatar-' + loser).closest('.judge-avatar-slot').querySelector('.squash-dog');
     squashDog.classList.add('show');
 
-    await sleep(900);
+    await sleep(1400);
+    await showEpilogue();
+    $('judge-epilogue').hidden = true;
     $('btn-play-again').hidden = false;
   }
 
@@ -955,7 +1030,6 @@
       winner: timers[1].elapsed === timers[2].elapsed ? null : (timers[1].elapsed < timers[2].elapsed ? 1 : 2),
     }),
   };
-
   // Auto-launch: the intro shows itself, no click needed to open it.
   showWelcomeIntro();
 })();
