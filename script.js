@@ -111,19 +111,33 @@
   // ---------------------------------------------------------
   $('btn-consent-agree').addEventListener('click', onConsentAgree);
   $('btn-consent-decline').addEventListener('click', () => {
-    $('btn-consent-agree').closest('.msgbox').querySelector('.msgbox-text').insertAdjacentHTML(
+    $('btn-consent-agree').closest('.clippy-bubble').insertAdjacentHTML(
       'beforeend', '<p class="msgbox-small" style="color:#c00 !important;">Camera access declined — click START any time to try again.</p>'
     );
   });
 
   async function onConsentAgree() {
+    await enterCaptureScreen();
+  }
+
+  // ---------------------------------------------------------
+  // Capture screen — auto-captures when both players hold up a
+  // peace sign (✌️) together; the manual 📷 button always works too.
+  // ---------------------------------------------------------
+  const captureCanvas = $('capture-canvas');
+  let groupPhotoDataUrl = null;
+  let lastHandAnchors = null; // {x,y} (mirrored, 0..1) of the 2 peace-sign hands at capture time, or null
+
+  async function enterCaptureScreen() {
     showScreen('capture');
     const promptEl = $('prompt-text');
+    $('upload-btn').classList.remove('pulse-highlight');
     try {
       await ensureCamera();
       $('video-feed').srcObject = mediaStream;
       $('avatar-video').srcObject = mediaStream;
-      promptEl.textContent = '! CAMERA CONNECTED. TWO PLAYERS GET IN FRAME, CLICK 📷 TO CAPTURE.';
+      promptEl.textContent = '! CAMERA CONNECTED. BOTH PLAYERS SHOW A ✌️ PEACE SIGN TO AUTO-CAPTURE (or click 📷).';
+      startCaptureGestureWatch();
     } catch (err) {
       promptEl.textContent = '! CAMERA UNAVAILABLE — click 📁 below to upload a group photo instead';
       $('capture-area').innerHTML = '<div id="no-camera-hint">📁<br />No camera access<br /><span>Click the 📁 button in the toolbar below to upload a group photo</span></div>';
@@ -131,15 +145,10 @@
     }
   }
 
-  // ---------------------------------------------------------
-  // Capture screen
-  // ---------------------------------------------------------
-  const captureCanvas = $('capture-canvas');
-  let groupPhotoDataUrl = null;
-
-  $('camera-btn').addEventListener('click', () => {
+  function doCapturePhoto(anchors) {
     const video = $('video-feed');
     if (!video.srcObject || !video.videoWidth) return;
+    stopCaptureGestureWatch();
     captureCanvas.width = video.videoWidth;
     captureCanvas.height = video.videoHeight;
     const ctx = captureCanvas.getContext('2d');
@@ -148,19 +157,104 @@
     ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     groupPhotoDataUrl = captureCanvas.toDataURL('image/jpeg', 0.92);
+    lastHandAnchors = anchors || null;
     goToScan();
-  });
+  }
+
+  $('camera-btn').addEventListener('click', () => doCapturePhoto(null));
 
   $('upload-btn').addEventListener('click', () => $('upload-input').click());
   $('upload-input').addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    stopCaptureGestureWatch();
     const reader = new FileReader();
-    reader.onload = () => { groupPhotoDataUrl = reader.result; goToScan(); };
+    reader.onload = () => { groupPhotoDataUrl = reader.result; lastHandAnchors = null; goToScan(); };
     reader.readAsDataURL(file);
   });
 
   $('verify-btn').addEventListener('click', () => $('camera-btn').click());
+
+  // ---------------------------------------------------------
+  // Shared MediaPipe HandLandmarker (used by both the capture-screen
+  // peace-sign watch and the duel-screen tile-swap gestures)
+  // ---------------------------------------------------------
+  let handLandmarkerPromise = null;
+  async function getHandLandmarker() {
+    if (!handLandmarkerPromise) {
+      handLandmarkerPromise = (async () => {
+        const { FilesetResolver, HandLandmarker } = await import(`${CDN_BASE}/vision_bundle.mjs`);
+        const fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
+        return HandLandmarker.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: HAND_MODEL_URL },
+          runningMode: 'VIDEO',
+          numHands: 2,
+        });
+      })();
+    }
+    return handLandmarkerPromise;
+  }
+
+  function fingerExtended(lm, tipIdx, pipIdx) {
+    const tip = lm[tipIdx], pip = lm[pipIdx], wrist = lm[0];
+    const dTip = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
+    const dPip = Math.hypot(pip.x - wrist.x, pip.y - wrist.y);
+    return dTip > dPip * 1.15;
+  }
+  function isPeaceSign(lm) {
+    return fingerExtended(lm, 8, 6) && fingerExtended(lm, 12, 10) &&
+      !fingerExtended(lm, 16, 14) && !fingerExtended(lm, 20, 18);
+  }
+
+  const PEACE_HOLD_MS = 700;
+  let captureLoopActive = false;
+  let peaceHoldStart = 0;
+  let captureHandLandmarker = null;
+
+  async function startCaptureGestureWatch() {
+    if (!mediaStream) return;
+    try {
+      captureHandLandmarker = await getHandLandmarker();
+    } catch (e) {
+      console.warn('Peace-sign auto-capture unavailable, use the 📷 button manually.', e);
+      return;
+    }
+    captureLoopActive = true;
+    peaceHoldStart = 0;
+    requestAnimationFrame(captureGestureLoop);
+  }
+
+  function stopCaptureGestureWatch() {
+    captureLoopActive = false;
+  }
+
+  function captureGestureLoop() {
+    if (!captureLoopActive) return;
+    const video = $('video-feed');
+    const promptEl = $('prompt-text');
+    if (captureHandLandmarker && video.readyState >= 2) {
+      const result = captureHandLandmarker.detectForVideo(video, performance.now());
+      const lms = result.landmarks || [];
+      const peaceHands = lms.filter(isPeaceSign);
+
+      if (peaceHands.length >= 2) {
+        if (!peaceHoldStart) peaceHoldStart = performance.now();
+        const remaining = Math.max(0, PEACE_HOLD_MS - (performance.now() - peaceHoldStart));
+        promptEl.textContent = `✌️✌️ PEACE SIGNS DETECTED — HOLD STILL... CAPTURING IN ${(remaining / 1000).toFixed(1)}s`;
+        if (remaining <= 0) {
+          const anchors = peaceHands.slice(0, 2).map((lm) => ({ x: clamp01(1 - lm[8].x), y: clamp01(lm[8].y) }));
+          doCapturePhoto(anchors);
+          return;
+        }
+      } else {
+        peaceHoldStart = 0;
+        promptEl.textContent = lms.length > 0
+          ? `✌️ ${peaceHands.length}/2 PEACE SIGNS — BOTH PLAYERS SHOW ✌️ TO AUTO-CAPTURE`
+          : '! CAMERA CONNECTED. BOTH PLAYERS SHOW A ✌️ PEACE SIGN TO AUTO-CAPTURE (or click 📷).';
+      }
+    }
+    requestAnimationFrame(captureGestureLoop);
+  }
 
   // ---------------------------------------------------------
   // Scan / face-detection screen
@@ -204,6 +298,12 @@
 
   let players = { 1: { avatar: null, box: null }, 2: { avatar: null, box: null } };
 
+  function anchorToBox(anchor, w, h, size) {
+    const cx = anchor.x * w;
+    const cy = Math.max(size / 2, anchor.y * h - h * 0.12); // bias up from the raised hand toward the face
+    return { originX: cx - size / 2, originY: cy - size / 2, width: size, height: size };
+  }
+
   async function goToScan() {
     showScreen('scan');
     const statusEl = $('scan-status');
@@ -229,19 +329,28 @@
         .slice(0, 4)
         .sort((a, b) => a.originX - b.originX);
     } catch (e) {
-      console.warn('Face detection unavailable, using fallback split.', e);
+      console.warn('Face detection unavailable.', e);
     }
 
-    let p1Box, p2Box;
+    let p1Box, p2Box, drawBoxes = false;
+    const w = img.naturalWidth, h = img.naturalHeight;
+
     if (boxes.length >= 2) {
       p1Box = boxes[0];
       p2Box = boxes[boxes.length - 1];
+      drawBoxes = true;
       statusEl.textContent = '✔ 2 PLAYERS DETECTED VIA FACE RECOGNITION.';
+    } else if (lastHandAnchors && lastHandAnchors.length >= 2) {
+      const sorted = [...lastHandAnchors].sort((a, b) => a.x - b.x);
+      const size = Math.min(w, h) * 0.42;
+      p1Box = anchorToBox(sorted[0], w, h, size);
+      p2Box = anchorToBox(sorted[1], w, h, size);
+      statusEl.textContent = '! FACE MODEL UNAVAILABLE — CROPPED FROM YOUR PEACE-SIGN HAND POSITIONS INSTEAD.';
     } else {
-      const w = img.naturalWidth, h = img.naturalHeight;
-      p1Box = { originX: 0, originY: 0, width: w / 2, height: h };
-      p2Box = { originX: w / 2, originY: 0, width: w / 2, height: h };
-      statusEl.textContent = '! COULD NOT ISOLATE 2 FACES — SPLIT FRAME LEFT/RIGHT INSTEAD.';
+      const size = Math.min(w, h) * 0.4;
+      p1Box = { originX: w * 0.28 - size / 2, originY: h * 0.12, width: size, height: size };
+      p2Box = { originX: w * 0.72 - size / 2, originY: h * 0.12, width: size, height: size };
+      statusEl.textContent = '! COULD NOT DETECT PLAYERS — USING DEFAULT CROPS.';
     }
 
     players[1].box = p1Box;
@@ -249,7 +358,7 @@
     players[1].avatar = cropSquareDataUrl(img, p1Box.originX + p1Box.width / 2, p1Box.originY + p1Box.height / 2, Math.max(p1Box.width, p1Box.height) * 1.7);
     players[2].avatar = cropSquareDataUrl(img, p2Box.originX + p2Box.width / 2, p2Box.originY + p2Box.height / 2, Math.max(p2Box.width, p2Box.height) * 1.7);
 
-    drawScanBoxes(ctx, [p1Box, p2Box]);
+    if (drawBoxes) drawScanBoxes(ctx, [p1Box, p2Box]);
 
     continueBtn.disabled = false;
     continueBtn.textContent = 'READY? START GAME →';
@@ -268,7 +377,7 @@
     });
   }
 
-  $('btn-retake').addEventListener('click', () => showScreen('capture'));
+  $('btn-retake').addEventListener('click', () => enterCaptureScreen());
   $('scan-continue-btn').addEventListener('click', () => startPixelSequence());
 
   // ---------------------------------------------------------
@@ -613,7 +722,7 @@
     stopGestureTracking();
     activeBoard = null;
     duelResolve = null;
-    showScreen('capture');
+    enterCaptureScreen();
   });
 
   // ---------------------------------------------------------
@@ -645,13 +754,7 @@
     }
 
     try {
-      const { FilesetResolver, HandLandmarker } = await import(`${CDN_BASE}/vision_bundle.mjs`);
-      const fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
-      handLandmarker = await HandLandmarker.createFromOptions(fileset, {
-        baseOptions: { modelAssetPath: HAND_MODEL_URL },
-        runningMode: 'VIDEO',
-        numHands: 1,
-      });
+      handLandmarker = await getHandLandmarker();
     } catch (e) {
       console.warn('Gesture tracking unavailable, falling back to manual mode.', e);
       setDuelPrompt('⚠ GESTURE MODULE UNAVAILABLE — USE 🖱 MANUAL MODE BELOW', false);
@@ -796,8 +899,10 @@
 
   function resetAll() {
     handLoopActive = false;
+    captureLoopActive = false;
     duelResolve = null;
     activeBoard = null;
+    lastHandAnchors = null;
     Object.values(timers).forEach((t) => { if (t.raf) cancelAnimationFrame(t.raf); t.finished = true; });
     stopCamera();
     groupPhotoDataUrl = null;
