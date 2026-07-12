@@ -195,10 +195,19 @@
                 <canvas id="gesture-overlay"></canvas>
               </div>
               <div id="duel-prompt">⚠ SHOW YOUR HAND — HOVER OR PINCH A TILE TO SWAP</div>
-              <div class="puzzle-wrap" id="duel-puzzle-wrap">
-                <div class="puzzle-board" id="duel-board"></div>
-                <div class="hand-cursor" id="duel-cursor"></div>
-                <div class="win-flag" id="duel-winflag">SOLVED!</div>
+              <div id="duel-puzzle-row">
+                <div class="puzzle-wrap" id="duel-puzzle-wrap">
+                  <div class="puzzle-board" id="duel-board"></div>
+                  <div class="hand-cursor" id="duel-cursor"></div>
+                  <div class="drag-ghost" id="duel-drag-ghost" aria-hidden="true"></div>
+                  <div class="win-flag" id="duel-winflag">SOLVED!</div>
+                </div>
+                <div id="gesture-guide" aria-hidden="true">
+                  <span class="gesture-guide-icon">🤏</span>
+                  <span class="gesture-guide-step"><b>PINCH</b> a tile to grab it</span>
+                  <span class="gesture-guide-step"><b>MOVE</b> your hand to drag it</span>
+                  <span class="gesture-guide-step"><b>RELEASE</b> to drop it there</span>
+                </div>
               </div>
               <button class="manual-toggle" id="duel-manual-toggle">🖱 Manual Mode</button>
             </div>

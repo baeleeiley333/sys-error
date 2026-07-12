@@ -406,7 +406,17 @@ aside#user-panel {
 #gesture-video { transform: scaleX(-1); opacity: 0.9; }
 #duel-prompt { font-size: 9px; color: #c02020; margin-bottom: 12px; letter-spacing: 0.5px; text-align: center; }
 #duel-prompt.ok { color: #1c8f4a; }
-#duel-puzzle-wrap { width: min(420px, 84vw); aspect-ratio: 1/1; margin-bottom: 12px; }
+#duel-puzzle-row { display: flex; align-items: flex-start; justify-content: center; gap: 10px; width: 100%; margin-bottom: 12px; }
+#duel-puzzle-wrap { width: min(360px, 74vw); aspect-ratio: 1/1; flex: 0 0 auto; }
+
+/* small always-visible reminder of the pinch/drag/drop gesture, next to the grid */
+#gesture-guide {
+  flex: 0 0 auto; width: 96px; display: flex; flex-direction: column; gap: 6px;
+  background: #111; border: 1px solid #444; padding: 8px 6px; color: #ccc;
+  font-size: 8px; line-height: 1.4; text-align: left;
+}
+.gesture-guide-icon { font-size: 20px; text-align: center; }
+.gesture-guide-step b { color: var(--accent-cyan); }
 
 /* ---- JUDGE: Roger the dog + winner/loser ---- */
 #judge-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
@@ -564,6 +574,16 @@ aside#user-panel {
 .puzzle-piece.drag-over { outline: 2px solid var(--accent-red); outline-offset: -2px; }
 .puzzle-piece.selected { outline: 3px solid #fff; outline-offset: -3px; }
 .puzzle-piece.solved { border-color: transparent; }
+.puzzle-piece.picked-up { opacity: 0.15; }
+.puzzle-piece.drop-target { outline: 2px dashed var(--accent-cyan); outline-offset: -2px; }
+
+.drag-ghost {
+  position: absolute; width: 33.333%; height: 33.333%; pointer-events: none; display: none;
+  transform: translate(-50%, -50%) scale(1.08); background-repeat: no-repeat; box-sizing: border-box;
+  border: 2px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.6); z-index: 5;
+  transition: left 0.06s linear, top 0.06s linear;
+}
+.drag-ghost.show { display: block; }
 .puzzle-piece span {
   position: absolute; top: 3px; right: 3px; color: #fff; font-size: 10px;
   background: rgba(0,0,0,0.6); padding: 1px 5px; font-weight: bold; pointer-events: none;
@@ -597,4 +617,10 @@ aside#user-panel {
 @media (max-width: 640px) {
   #judge-avatars { gap: 16px; }
   .sys-title { font-size: 16px; }
+  #duel-puzzle-row { flex-direction: column; align-items: center; }
+  #duel-puzzle-wrap { width: min(360px, 84vw); }
+  #gesture-guide {
+    width: min(360px, 84vw); flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px 10px;
+  }
+  .gesture-guide-icon { width: 100%; }
 }

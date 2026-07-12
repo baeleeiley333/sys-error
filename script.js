@@ -541,6 +541,21 @@
       }
     }
 
+    pickUp(pos) {
+      if (this.solved) return;
+      this.pieces[pos].classList.add('picked-up');
+    }
+
+    cancelPickup(pos) {
+      if (pos == null) return;
+      this.pieces[pos].classList.remove('picked-up');
+    }
+
+    dropAt(fromPos, toPos) {
+      this.pieces[fromPos].classList.remove('picked-up');
+      this.swap(fromPos, toPos);
+    }
+
     checkSolved() {
       const win = this.cells.every((v, i) => v === i);
       if (win) {
@@ -831,7 +846,10 @@
   // ---------------------------------------------------------
   let handLandmarker = null;
   let handLoopActive = false;
-  let gestureState = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
+  let gestureState = {
+    lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false,
+    dragging: false, dragFromPos: null,
+  };
   let lastPromptState = null;
 
   function setDuelPrompt(text, ok) {
@@ -862,10 +880,13 @@
       return;
     }
 
-    setDuelPrompt('✋ SHOW YOUR HAND — HOVER (0.7s) OR PINCH A TILE TO SWAP', true);
+    setDuelPrompt('✋ SHOW YOUR HAND — HOVER (0.7s), OR PINCH • DRAG • RELEASE A TILE', true);
     handLoopActive = true;
     lastPromptState = null;
-    gestureState = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
+    gestureState = {
+      lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false,
+      dragging: false, dragFromPos: null,
+    };
     const cursor = $('duel-cursor');
     cursor.classList.remove('p2');
     if (activeBoard && activeBoard.playerId === 2) cursor.classList.add('p2');
@@ -875,6 +896,16 @@
   function stopGestureTracking() {
     handLoopActive = false;
     hideCursor();
+    cancelDrag();
+  }
+
+  function cancelDrag() {
+    const st = gestureState;
+    if (st.dragging && activeBoard) activeBoard.cancelPickup(st.dragFromPos);
+    st.dragging = false;
+    st.dragFromPos = null;
+    hideDragGhost();
+    clearDropTargets();
   }
 
   function predictLoop() {
@@ -893,6 +924,7 @@
 
     if (landmarks.length === 0) {
       hideCursor();
+      cancelDrag();
       gestureState.dwellStart = 0;
       gestureState.lastCell = -1;
       gestureState.wasPinch = false;
@@ -915,27 +947,61 @@
     const pinching = dist < CONFIG.PINCH_DIST;
     setPinchVisual(pinching);
     handleHover(mx, my, pinching, now);
-    setDuelPrompt('✋ TRACKING HAND — HOVER OR PINCH TO SWAP', true);
+    setDuelPrompt(
+      gestureState.dragging ? '🤏 DRAGGING — RELEASE TO DROP THE TILE' : '✋ TRACKING HAND — PINCH • DRAG • RELEASE, OR HOVER TO SWAP',
+      true
+    );
+  }
+
+  function posFromCoords(lx, ly) {
+    const n = CONFIG.GRID;
+    const col = Math.min(n - 1, Math.floor(lx * n));
+    const row = Math.min(n - 1, Math.floor(ly * n));
+    return row * n + col;
   }
 
   function handleHover(lx, ly, pinching, now) {
     const board = activeBoard;
     const st = gestureState;
     if (!board || board.solved) return;
-    if (lx < 0 || lx > 1 || ly < 0 || ly > 1) { st.dwellStart = 0; st.lastCell = -1; return; }
+    const outOfBounds = lx < 0 || lx > 1 || ly < 0 || ly > 1;
 
-    const n = CONFIG.GRID;
-    const col = Math.min(n - 1, Math.floor(lx * n));
-    const row = Math.min(n - 1, Math.floor(ly * n));
-    const pos = row * n + col;
-
-    if (pinching && !st.wasPinch && now - st.lastTrigger > CONFIG.SELECT_COOLDOWN_MS) {
-      board.select(pos);
-      st.lastTrigger = now;
+    if (outOfBounds) {
       st.dwellStart = 0;
+      st.lastCell = -1;
+      // released off-frame mid-drag -- cancel rather than guess a drop target
+      if (st.dragging && st.wasPinch && !pinching) cancelDrag();
+      st.wasPinch = pinching;
+      updateDragGhost(lx, ly, false);
+      return;
+    }
+
+    const pos = posFromCoords(lx, ly);
+
+    // --- pinch to grab, drag to move, release to drop ---
+    if (pinching && !st.wasPinch && !st.dragging) {
+      board.pickUp(pos);
+      st.dragging = true;
+      st.dragFromPos = pos;
+      st.dwellStart = 0;
+    } else if (!pinching && st.wasPinch && st.dragging) {
+      board.dropAt(st.dragFromPos, pos);
+      st.dragging = false;
+      st.dragFromPos = null;
+      st.lastTrigger = now;
+      hideDragGhost();
+      clearDropTargets();
     }
     st.wasPinch = pinching;
 
+    if (st.dragging) {
+      updateDragGhost(lx, ly, true);
+      highlightDropTarget(pos);
+      return;
+    }
+    updateDragGhost(lx, ly, false);
+
+    // --- fallback: hover-dwell to select, hover again to swap ---
     if (!pinching) {
       if (st.lastCell !== pos) {
         st.lastCell = pos;
@@ -947,6 +1013,31 @@
       }
     }
   }
+
+  let dropTargetPos = null;
+  function highlightDropTarget(pos) {
+    if (!activeBoard || pos === dropTargetPos) return;
+    clearDropTargets();
+    activeBoard.pieces[pos].classList.add('drop-target');
+    dropTargetPos = pos;
+  }
+  function clearDropTargets() {
+    if (activeBoard) activeBoard.pieces.forEach((p) => p.classList.remove('drop-target'));
+    dropTargetPos = null;
+  }
+
+  function updateDragGhost(lx, ly, show) {
+    const ghost = $('duel-drag-ghost');
+    if (!show || !activeBoard) { ghost.classList.remove('show'); return; }
+    const fromPiece = activeBoard.pieces[gestureState.dragFromPos];
+    ghost.style.backgroundImage = fromPiece.style.backgroundImage;
+    ghost.style.backgroundSize = fromPiece.style.backgroundSize;
+    ghost.style.backgroundPosition = fromPiece.style.backgroundPosition;
+    ghost.style.left = `${clamp01(lx) * 100}%`;
+    ghost.style.top = `${clamp01(ly) * 100}%`;
+    ghost.classList.add('show');
+  }
+  function hideDragGhost() { $('duel-drag-ghost').classList.remove('show'); }
 
   function updateCursor(lx, ly) {
     const el = $('duel-cursor');
@@ -999,6 +1090,8 @@
 
   function resetAll() {
     handLoopActive = false;
+    hideDragGhost();
+    clearDropTargets();
     captureLoopActive = false;
     duelResolve = null;
     activeBoard = null;
