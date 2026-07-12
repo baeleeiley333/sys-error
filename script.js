@@ -112,7 +112,9 @@
       $('avatar-video').srcObject = mediaStream;
       promptEl.textContent = '! CAMERA CONNECTED. TWO PLAYERS GET IN FRAME, CLICK 📷 TO CAPTURE.';
     } catch (err) {
-      promptEl.textContent = '! CAMERA UNAVAILABLE — USE 📁 TO UPLOAD A GROUP PHOTO INSTEAD.';
+      promptEl.textContent = '! 摄像头不可用 CAMERA UNAVAILABLE — 请点击下方 📁 上传一张合照代替拍照 →';
+      $('capture-area').innerHTML = '<div id="no-camera-hint">📁<br />没有摄像头访问权限<br /><span>点击下方工具栏的 📁 按钮上传一张合照</span></div>';
+      $('upload-btn').classList.add('pulse-highlight');
     }
   }
 
