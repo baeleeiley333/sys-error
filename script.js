@@ -1,7 +1,10 @@
 /* =========================================================
    Human Verify - Puzzle Arena
-   WindowsXP-shell "attendance system" captcha, 2-player arcade,
-   gesture-controlled 3x3 photo restoration race.
+   WindowsXP-shell "attendance system" captcha that leads into a
+   pixel-arcade 1v1 duel: GAME START -> VS intro -> Player 1's turn
+   (avatar jump/glow/enlarge, 3-2-1 countdown, huge timer, gesture-
+   controlled 3x3 photo restore) -> Player 2's turn -> Roger the dog
+   judges the winner.
 
    Nothing here ever leaves the browser: the captured photo lives
    only in memory / data URLs, and all face + hand recognition runs
@@ -36,8 +39,10 @@
     capture: $('screen-capture'),
     scan: $('screen-scan'),
     countdown: $('screen-countdown'),
-    arena: $('screen-arena'),
-    results: $('screen-results'),
+    gamestart: $('screen-gamestart'),
+    vs: $('screen-vs'),
+    duel: $('screen-duel'),
+    judge: $('screen-judge'),
   };
 
   function showScreen(name) {
@@ -46,6 +51,12 @@
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+  function restartAnimation(el) {
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+  }
 
   // ---------------------------------------------------------
   // Audio (synthesized, no asset files)
@@ -73,6 +84,8 @@
   const playCountBeep = () => beep(440, 0.15, 'square', 0.12);
   const playGoBeep = () => beep(880, 0.35, 'square', 0.16);
   const playWinFanfare = () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'square', 0.12), i * 110));
+  const playGameStartFanfare = () => [392, 523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.16, 'square', 0.13), i * 90));
+  const playVsSting = () => [220, 174].forEach((f, i) => setTimeout(() => beep(f, 0.22, 'sawtooth', 0.1), i * 130));
 
   // ---------------------------------------------------------
   // Camera
@@ -99,7 +112,7 @@
   $('btn-consent-agree').addEventListener('click', onConsentAgree);
   $('btn-consent-decline').addEventListener('click', () => {
     $('btn-consent-agree').closest('.msgbox').querySelector('.msgbox-text').insertAdjacentHTML(
-      'beforeend', '<p class="msgbox-small" style="color:#c00 !important;">未同意开启摄像头，无法开始游戏。您可以随时重新点击"开始"。</p>'
+      'beforeend', '<p class="msgbox-small" style="color:#c00 !important;">Camera access declined — click START any time to try again.</p>'
     );
   });
 
@@ -112,8 +125,8 @@
       $('avatar-video').srcObject = mediaStream;
       promptEl.textContent = '! CAMERA CONNECTED. TWO PLAYERS GET IN FRAME, CLICK 📷 TO CAPTURE.';
     } catch (err) {
-      promptEl.textContent = '! 摄像头不可用 CAMERA UNAVAILABLE — 请点击下方 📁 上传一张合照代替拍照 →';
-      $('capture-area').innerHTML = '<div id="no-camera-hint">📁<br />没有摄像头访问权限<br /><span>点击下方工具栏的 📁 按钮上传一张合照</span></div>';
+      promptEl.textContent = '! CAMERA UNAVAILABLE — click 📁 below to upload a group photo instead';
+      $('capture-area').innerHTML = '<div id="no-camera-hint">📁<br />No camera access<br /><span>Click the 📁 button in the toolbar below to upload a group photo</span></div>';
       $('upload-btn').classList.add('pulse-highlight');
     }
   }
@@ -237,8 +250,6 @@
     players[2].avatar = cropSquareDataUrl(img, p2Box.originX + p2Box.width / 2, p2Box.originY + p2Box.height / 2, Math.max(p2Box.width, p2Box.height) * 1.7);
 
     drawScanBoxes(ctx, [p1Box, p2Box]);
-    $('avatar-1').style.backgroundImage = `url(${players[1].avatar})`;
-    $('avatar-2').style.backgroundImage = `url(${players[2].avatar})`;
 
     continueBtn.disabled = false;
     continueBtn.textContent = 'READY? START GAME →';
@@ -258,33 +269,12 @@
   }
 
   $('btn-retake').addEventListener('click', () => showScreen('capture'));
-  $('scan-continue-btn').addEventListener('click', () => runCountdown());
-
-  // ---------------------------------------------------------
-  // Countdown
-  // ---------------------------------------------------------
-  async function runCountdown() {
-    buildArena();
-    showScreen('countdown');
-    const el = $('countdown-number');
-    const seq = ['3', '2', '1', 'GO!'];
-    for (const label of seq) {
-      el.textContent = label;
-      el.style.animation = 'none';
-      void el.offsetWidth;
-      el.style.animation = 'pop 0.5s ease-out';
-      if (label === 'GO!') playGoBeep(); else playCountBeep();
-      await sleep(700);
-    }
-    showScreen('arena');
-    startGestureTracking();
-    startTimers();
-  }
+  $('scan-continue-btn').addEventListener('click', () => startPixelSequence());
 
   // ---------------------------------------------------------
   // Puzzle board
   // ---------------------------------------------------------
-  const boards = { 1: null, 2: null };
+  let activeBoard = null;
 
   function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -409,33 +399,20 @@
     }
   }
 
-  function buildArena() {
-    boards[1] = new PuzzleBoard($('board-1'), 1, groupPhotoDataUrl);
-    boards[2] = new PuzzleBoard($('board-2'), 2, groupPhotoDataUrl);
-    $('winflag-1').classList.remove('show');
-    $('winflag-2').classList.remove('show');
-    document.querySelectorAll('.manual-toggle').forEach((btn) => btn.classList.remove('active'));
-  }
-
-  document.querySelectorAll('.manual-toggle').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const pid = Number(btn.dataset.player);
-      const board = boards[pid];
-      if (!board) return;
-      const on = board.el.classList.toggle('manual-off') === false;
-      btn.classList.toggle('active', on);
-      btn.textContent = on ? '🖱 手动模式：开 / ON' : '🖱 手动模式 / Manual';
-    });
+  $('duel-manual-toggle').addEventListener('click', () => {
+    if (!activeBoard) return;
+    const on = activeBoard.el.classList.toggle('manual-off') === false;
+    const btn = $('duel-manual-toggle');
+    btn.classList.toggle('active', on);
+    btn.textContent = on ? '🖱 Manual Mode: ON' : '🖱 Manual Mode';
   });
 
-  function enableManualModeForAll() {
-    [1, 2].forEach((pid) => {
-      const board = boards[pid];
-      if (!board) return;
-      board.el.classList.remove('manual-off');
-      const btn = document.querySelector(`.manual-toggle[data-player="${pid}"]`);
-      if (btn) { btn.classList.add('active'); btn.textContent = '🖱 手动模式：开 / ON'; }
-    });
+  function enableManualMode() {
+    if (!activeBoard) return;
+    activeBoard.el.classList.remove('manual-off');
+    const btn = $('duel-manual-toggle');
+    btn.classList.add('active');
+    btn.textContent = '🖱 Manual Mode: ON';
   }
 
   // ---------------------------------------------------------
@@ -453,70 +430,203 @@
     return `${String(m).padStart(2, '0')}:${sec}`;
   }
 
-  function startTimers() {
-    const now = performance.now();
-    [1, 2].forEach((p) => {
-      timers[p].start = now;
-      timers[p].finished = false;
-      timers[p].elapsed = 0;
-      tick(p);
-    });
+  function startDuelTimer(playerId) {
+    const t = timers[playerId];
+    t.start = performance.now();
+    t.finished = false;
+    t.elapsed = 0;
+    tickDuel(playerId);
   }
 
-  function tick(p) {
-    const t = timers[p];
+  function tickDuel(playerId) {
+    const t = timers[playerId];
     if (t.finished) return;
     t.elapsed = performance.now() - t.start;
-    $('timer-' + p).textContent = formatTime(t.elapsed);
-    t.raf = requestAnimationFrame(() => tick(p));
+    $('duel-giant-timer').textContent = formatTime(t.elapsed);
+    t.raf = requestAnimationFrame(() => tickDuel(playerId));
   }
+
+  let duelResolve = null;
 
   function onPlayerSolved(playerId) {
     const t = timers[playerId];
     if (t.finished) return;
     t.finished = true;
     if (t.raf) cancelAnimationFrame(t.raf);
-    $('timer-' + playerId).textContent = formatTime(t.elapsed);
-    $('winflag-' + playerId).classList.add('show');
+    $('duel-giant-timer').textContent = formatTime(t.elapsed);
+    $('duel-winflag').classList.add('show');
     playWinFanfare();
-    checkBothFinished();
+    stopGestureTracking();
+    setTimeout(() => {
+      if (duelResolve) {
+        const resolve = duelResolve;
+        duelResolve = null;
+        resolve();
+      }
+    }, 1300);
   }
 
-  function checkBothFinished() {
-    if (timers[1].finished && timers[2].finished) {
-      setTimeout(showResults, 900);
+  // ---------------------------------------------------------
+  // Pixel arcade sequence: GAME START -> VS -> P1 turn -> P2 turn -> JUDGE
+  // ---------------------------------------------------------
+  async function startPixelSequence() {
+    await showGameStart();
+    await showVsScreen();
+    await runPlayerTurn(1);
+    await runPlayerTurn(2);
+    await showJudge();
+  }
+
+  async function showGameStart() {
+    showScreen('gamestart');
+    restartAnimation($('gamestart-text'));
+    playGameStartFanfare();
+    await sleep(1600);
+  }
+
+  async function showVsScreen() {
+    showScreen('vs');
+    $('vs-avatar-1').style.backgroundImage = `url(${players[1].avatar})`;
+    $('vs-avatar-2').style.backgroundImage = `url(${players[2].avatar})`;
+    restartAnimation(document.querySelector('.vs-side-1'));
+    restartAnimation(document.querySelector('.vs-side-2'));
+    restartAnimation($('vs-text'));
+    playVsSting();
+    await sleep(2400);
+  }
+
+  async function runPlayerTurn(playerId) {
+    await showTurnIntro(playerId);
+    buildDuelBoard(playerId);
+    $('duel-intro').hidden = true;
+    await runDuelCountdown(playerId);
+    $('duel-play').hidden = false;
+    showScreen('duel');
+    await new Promise((resolve) => {
+      duelResolve = resolve;
+      startDuelTimer(playerId);
+      startGestureTracking();
+    });
+  }
+
+  async function showTurnIntro(playerId) {
+    showScreen('duel');
+    $('duel-play').hidden = true;
+    $('duel-intro').hidden = false;
+    const hero = $('hero-avatar');
+    hero.className = 'hero-avatar p' + playerId;
+    hero.style.backgroundImage = `url(${players[playerId].avatar})`;
+    restartAnimation(hero);
+    $('duel-intro-text').textContent = `PLAYER ${playerId} GET READY!`;
+    restartAnimation($('duel-intro-text'));
+    playCountBeep();
+    await sleep(1700);
+  }
+
+  function buildDuelBoard(playerId) {
+    $('duel-hud-avatar').style.backgroundImage = `url(${players[playerId].avatar})`;
+    $('duel-hud-name').textContent = 'PLAYER ' + playerId;
+    $('duel-hud-name').className = playerId === 1 ? 'p1-color' : 'p2-color';
+    $('duel-giant-timer').textContent = '00:00.0';
+    $('duel-winflag').classList.remove('show');
+    $('duel-manual-toggle').classList.remove('active');
+    $('duel-manual-toggle').textContent = '🖱 Manual Mode';
+    activeBoard = new PuzzleBoard($('duel-board'), playerId, groupPhotoDataUrl);
+  }
+
+  async function runDuelCountdown(playerId) {
+    showScreen('countdown');
+    $('countdown-player-label').textContent = 'PLAYER ' + playerId;
+    const el = $('countdown-number');
+    const seq = ['3', '2', '1', 'GO!'];
+    for (const label of seq) {
+      el.textContent = label;
+      restartAnimation(el);
+      el.style.animation = 'pop 0.5s ease-out';
+      if (label === 'GO!') playGoBeep(); else playCountBeep();
+      await sleep(700);
     }
   }
 
-  function showResults() {
+  // ---------------------------------------------------------
+  // Judge screen: Roger the dog crowns the winner
+  // ---------------------------------------------------------
+  function setBubble(text) {
+    const bubble = $('judge-bubble');
+    bubble.style.opacity = '1';
+    $('judge-bubble-text').textContent = text;
+  }
+
+  function resetJudgeVisualState() {
+    [1, 2].forEach((p) => {
+      $('judge-avatar-' + p).classList.remove('winner', 'loser');
+      $('judge-crown-' + p).classList.remove('show');
+    });
+    document.querySelectorAll('.squash-dog').forEach((el) => el.classList.remove('show'));
+    const dog = $('judge-dog');
+    dog.style.opacity = '1';
+    dog.classList.remove('bounce');
+    $('judge-bubble').style.opacity = '0';
+    $('btn-play-again').hidden = true;
+  }
+
+  async function showJudge() {
+    showScreen('judge');
+    resetJudgeVisualState();
+    $('judge-avatar-1').style.backgroundImage = `url(${players[1].avatar})`;
+    $('judge-avatar-2').style.backgroundImage = `url(${players[2].avatar})`;
+    $('judge-time-1').textContent = formatTime(timers[1].elapsed);
+    $('judge-time-2').textContent = formatTime(timers[2].elapsed);
+
+    const dog = $('judge-dog');
+    restartAnimation(dog);
+    await sleep(650);
+    dog.classList.add('bounce');
+
+    setBubble("YOU BOTH DID GREAT...");
+    await sleep(1400);
+    setBubble('...BUT THERE CAN ONLY BE ONE WINNER!');
+    await sleep(1600);
+    $('judge-bubble').style.opacity = '0';
+
     const t1 = timers[1].elapsed, t2 = timers[2].elapsed;
-    $('result-time-1').textContent = formatTime(t1);
-    $('result-time-2').textContent = formatTime(t2);
-    const winnerEl = $('results-winner');
-    if (t1 < t2) winnerEl.textContent = '🏆 PLAYER 1 WINS!';
-    else if (t2 < t1) winnerEl.textContent = '🏆 PLAYER 2 WINS!';
-    else winnerEl.textContent = '🤝 DRAW!';
-    showScreen('results');
-    stopGestureTracking();
+    const winner = t1 === t2 ? (Math.random() < 0.5 ? 1 : 2) : (t1 < t2 ? 1 : 2);
+    const loser = winner === 1 ? 2 : 1;
+
+    $('judge-avatar-' + winner).classList.add('winner');
+    $('judge-crown-' + winner).classList.add('show');
+    $('judge-avatar-' + loser).classList.add('loser');
+    playWinFanfare();
+    await sleep(400);
+
+    dog.classList.remove('bounce');
+    dog.style.animation = 'none'; // release the dogHop fill-forwards lock so opacity below actually takes
+    dog.style.opacity = '0';
+    const squashDog = $('judge-avatar-' + loser).closest('.judge-avatar-slot').querySelector('.squash-dog');
+    squashDog.classList.add('show');
+
+    await sleep(900);
+    $('btn-play-again').hidden = false;
   }
 
   $('btn-play-again').addEventListener('click', () => {
+    stopGestureTracking();
+    activeBoard = null;
+    duelResolve = null;
     showScreen('capture');
   });
 
   // ---------------------------------------------------------
-  // Gesture tracking (MediaPipe HandLandmarker)
+  // Gesture tracking (MediaPipe HandLandmarker) — single active
+  // player's board, full camera frame maps directly to its grid.
   // ---------------------------------------------------------
   let handLandmarker = null;
   let handLoopActive = false;
-  const gestureState = {
-    1: { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false },
-    2: { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false },
-  };
+  let gestureState = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
   let lastPromptState = null;
 
-  function setArenaPrompt(text, ok) {
-    const el = $('arena-prompt');
+  function setDuelPrompt(text, ok) {
+    const el = $('duel-prompt');
     if (lastPromptState === text) return;
     lastPromptState = text;
     el.textContent = text;
@@ -529,8 +639,8 @@
       if (!mediaStream) await ensureCamera();
       gestureVideo.srcObject = mediaStream;
     } catch (e) {
-      setArenaPrompt('⚠ NO CAMERA — MANUAL MODE ACTIVE FOR BOTH PLAYERS', false);
-      enableManualModeForAll();
+      setDuelPrompt('⚠ NO CAMERA — USE 🖱 MANUAL MODE BELOW', false);
+      enableManualMode();
       return;
     }
 
@@ -540,29 +650,31 @@
       handLandmarker = await HandLandmarker.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: HAND_MODEL_URL },
         runningMode: 'VIDEO',
-        numHands: 2,
+        numHands: 1,
       });
     } catch (e) {
       console.warn('Gesture tracking unavailable, falling back to manual mode.', e);
-      setArenaPrompt('⚠ GESTURE MODULE UNAVAILABLE — USE 🖱 MANUAL MODE BELOW', false);
-      enableManualModeForAll();
+      setDuelPrompt('⚠ GESTURE MODULE UNAVAILABLE — USE 🖱 MANUAL MODE BELOW', false);
+      enableManualMode();
       return;
     }
 
-    setArenaPrompt('✋ SHOW YOUR HAND — HOVER (0.7s) OR PINCH A TILE TO SWAP', true);
+    setDuelPrompt('✋ SHOW YOUR HAND — HOVER (0.7s) OR PINCH A TILE TO SWAP', true);
     handLoopActive = true;
-    gestureState[1] = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
-    gestureState[2] = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
+    lastPromptState = null;
+    gestureState = { lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false };
+    const cursor = $('duel-cursor');
+    cursor.classList.remove('p2');
+    if (activeBoard && activeBoard.playerId === 2) cursor.classList.add('p2');
     requestAnimationFrame(predictLoop);
   }
 
   function stopGestureTracking() {
     handLoopActive = false;
-    hideCursor(1);
-    hideCursor(2);
+    hideCursor();
   }
 
-  function predictLoop(nowTs) {
+  function predictLoop() {
     if (!handLoopActive) return;
     const video = $('gesture-video');
     if (handLandmarker && video.readyState >= 2) {
@@ -575,46 +687,37 @@
 
   function processHands(result, now) {
     const landmarks = result.landmarks || [];
-    const seen = new Set();
 
-    landmarks.forEach((lm) => {
-      const indexTip = lm[8];
-      const thumbTip = lm[4];
-      const mx = 1 - indexTip.x; // mirror to match displayed (selfie) view
-      const my = clamp01(indexTip.y);
-      const playerId = mx < 0.5 ? 1 : 2;
-      seen.add(playerId);
+    if (landmarks.length === 0) {
+      hideCursor();
+      gestureState.dwellStart = 0;
+      gestureState.lastCell = -1;
+      gestureState.wasPinch = false;
+      setDuelPrompt('⚠ SHOW YOUR HAND TO THE CAMERA', false);
+      return;
+    }
 
-      const localX = playerId === 1 ? mx / 0.5 : (mx - 0.5) / 0.5;
-      const localY = my;
-      updateCursor(playerId, localX, localY);
+    const lm = landmarks[0];
+    const indexTip = lm[8];
+    const thumbTip = lm[4];
+    const mx = clamp01(1 - indexTip.x); // mirror to match displayed (selfie) view
+    const my = clamp01(indexTip.y);
+    updateCursor(mx, my);
 
-      const dist = Math.hypot(
-        indexTip.x - thumbTip.x,
-        indexTip.y - thumbTip.y,
-        (indexTip.z || 0) - (thumbTip.z || 0)
-      );
-      const pinching = dist < CONFIG.PINCH_DIST;
-      setPinchVisual(playerId, pinching);
-      handleHover(playerId, localX, localY, pinching, now);
-    });
-
-    [1, 2].forEach((p) => {
-      if (!seen.has(p)) {
-        hideCursor(p);
-        gestureState[p].dwellStart = 0;
-        gestureState[p].lastCell = -1;
-        gestureState[p].wasPinch = false;
-      }
-    });
-
-    if (landmarks.length === 0) setArenaPrompt('⚠ SHOW YOUR HAND(S) TO THE CAMERA', false);
-    else setArenaPrompt(`✋ TRACKING ${landmarks.length} HAND(S) — HOVER OR PINCH TO SWAP`, true);
+    const dist = Math.hypot(
+      indexTip.x - thumbTip.x,
+      indexTip.y - thumbTip.y,
+      (indexTip.z || 0) - (thumbTip.z || 0)
+    );
+    const pinching = dist < CONFIG.PINCH_DIST;
+    setPinchVisual(pinching);
+    handleHover(mx, my, pinching, now);
+    setDuelPrompt('✋ TRACKING HAND — HOVER OR PINCH TO SWAP', true);
   }
 
-  function handleHover(playerId, lx, ly, pinching, now) {
-    const board = boards[playerId];
-    const st = gestureState[playerId];
+  function handleHover(lx, ly, pinching, now) {
+    const board = activeBoard;
+    const st = gestureState;
     if (!board || board.solved) return;
     if (lx < 0 || lx > 1 || ly < 0 || ly > 1) { st.dwellStart = 0; st.lastCell = -1; return; }
 
@@ -642,14 +745,14 @@
     }
   }
 
-  function updateCursor(playerId, lx, ly) {
-    const el = $('cursor-' + playerId);
+  function updateCursor(lx, ly) {
+    const el = $('duel-cursor');
     el.style.display = (lx < 0 || lx > 1 || ly < 0 || ly > 1) ? 'none' : 'block';
     el.style.left = `${clamp01(lx) * 100}%`;
     el.style.top = `${clamp01(ly) * 100}%`;
   }
-  function hideCursor(playerId) { $('cursor-' + playerId).style.display = 'none'; }
-  function setPinchVisual(playerId, pinching) { $('cursor-' + playerId).classList.toggle('pinch', pinching); }
+  function hideCursor() { $('duel-cursor').style.display = 'none'; }
+  function setPinchVisual(pinching) { $('duel-cursor').classList.toggle('pinch', pinching); }
 
   function drawSkeleton(result) {
     const canvas = $('gesture-overlay');
@@ -665,8 +768,8 @@
       [0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],
       [0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17],
     ];
-    (result.landmarks || []).forEach((lm, hi) => {
-      const color = hi % 2 === 0 ? '#35c3ff' : '#ff5fd1';
+    (result.landmarks || []).forEach((lm) => {
+      const color = activeBoard && activeBoard.playerId === 2 ? '#ff5fd1' : '#35c3ff';
       ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
       ctx.beginPath();
       CONNECTIONS.forEach(([a, b]) => {
@@ -693,10 +796,11 @@
 
   function resetAll() {
     handLoopActive = false;
+    duelResolve = null;
+    activeBoard = null;
     Object.values(timers).forEach((t) => { if (t.raf) cancelAnimationFrame(t.raf); t.finished = true; });
     stopCamera();
     groupPhotoDataUrl = null;
-    boards[1] = boards[2] = null;
     showScreen('consent');
   }
 
