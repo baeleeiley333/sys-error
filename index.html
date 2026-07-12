@@ -24,26 +24,24 @@
       </div>
     </div>
 
-    <!-- ============ SCREEN: WELCOME — two-stage reveal ============
-         Stage 1 (auto-shown on load): just the wizard dialog, cropped
-         tight from the reference image, floating on the real desktop
-         (no baked-in icons, so nothing duplicates). Click it and it
-         swaps for Stage 2: the full reference composite (desktop +
-         wizard + Clippy together), full-bleed, with real Next/Cancel
-         hotspots positioned over the actual button art. -->
+    <!-- ============ SCREEN: WELCOME — dialog + Clippy popup ============
+         A single wizard dialog (cropped tight from the reference image,
+         no baked-in icons) floats on the real desktop, auto-shown on
+         load. Clicking it reveals a Clippy popup layered on top, at
+         the same spot Clippy sits in the original composite. Next/
+         Back/Cancel/Close are real hotspots on the dialog art itself. -->
     <section class="screen screen-fullbleed screen-overlay" id="screen-welcome">
-      <div class="floating-dialog" id="welcome-stage1">
-        <img src="assets/wizard-only.jpg" alt="Welcome to Relationship-Triggered Visual System 95" />
-        <button class="image-hotspot-full" id="btn-welcome-continue" aria-label="Continue"></button>
-      </div>
-      <div class="image-screen-full" id="welcome-stage2" hidden style="--ar: 1080 / 812;">
-        <img src="assets/clippy-scene.jpg" alt="Welcome to Relationship-Triggered Visual System 95" />
+      <div class="floating-dialog" id="welcome-dialog">
+        <img id="welcome-dialog-bg" src="assets/intro.jpg" alt="Welcome to Relationship-Triggered Visual System 95" />
+        <img class="clippy-popup" id="clippy-popup" src="assets/clippy-popup.png" alt="Clippy: all camera content stays in your browser, nothing is uploaded or stored" />
         <button class="image-hotspot" id="btn-wizard-next" aria-label="Next"
-          style="left:55.6%;top:73.2%;width:10.7%;height:4.1%;"></button>
+          style="left:62.5%;top:87.3%;width:16.4%;height:10.1%;"></button>
+        <button class="image-hotspot" id="btn-wizard-back" aria-label="Back"
+          style="left:43.8%;top:88.3%;width:16.1%;height:8.3%;"></button>
         <button class="image-hotspot" id="btn-wizard-cancel" aria-label="Cancel"
-          style="left:67.6%;top:73.4%;width:10.7%;height:3.6%;"></button>
-        <button class="image-hotspot" id="btn-wizard-cancel-x" aria-label="Close"
-          style="left:77.6%;top:20.9%;width:2.0%;height:2.2%;"></button>
+          style="left:81.4%;top:88.3%;width:16.4%;height:8.3%;"></button>
+        <button class="image-hotspot" id="btn-wizard-close" aria-label="Close"
+          style="left:94.0%;top:1.8%;width:4.1%;height:4.8%;"></button>
       </div>
     </section>
 

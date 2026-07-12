@@ -108,18 +108,16 @@
 
   // ---------------------------------------------------------
   // Welcome intro (auto-launches on load, no click needed to open):
-  // stage 1 = a small floating dialog, cropped tight from the
-  // reference image so it never duplicates the real desktop icons
-  // sitting behind it; clicking it reveals stage 2, the full
-  // reference composite (desktop + wizard + Clippy together),
-  // full-bleed, with real Next/Cancel hotspots. Next leads to the
-  // (also full-bleed, animated) gamestart screen; Start there opens
-  // the actual app window and begins the capture flow.
+  // a single wizard dialog, cropped tight from the reference image so
+  // it never duplicates the real desktop icons sitting behind it.
+  // Clicking the dialog reveals a Clippy popup layered on top of it
+  // (same dialog stays put); Next leads to the (full-bleed, animated)
+  // gamestart screen; Start there opens the actual app window and
+  // begins the capture flow.
   // ---------------------------------------------------------
   function resetWelcomeStage() {
-    $('welcome-stage1').hidden = false;
-    $('welcome-stage2').hidden = true;
-    restartAnimation($('welcome-stage1'));
+    $('clippy-popup').classList.remove('visible');
+    restartAnimation($('welcome-dialog'));
   }
 
   function showWelcomeIntro() {
@@ -136,15 +134,15 @@
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcomeIntro(); }
   });
 
-  $('btn-welcome-continue').addEventListener('click', () => {
-    $('welcome-stage1').hidden = true;
-    $('welcome-stage2').hidden = false;
+  $('welcome-dialog-bg').addEventListener('click', () => {
+    $('clippy-popup').classList.add('visible');
     playVsSting();
   });
 
   $('btn-wizard-next').addEventListener('click', () => showScreen('gamestart'));
+  $('btn-wizard-back').addEventListener('click', showWelcomeIntro);
   $('btn-wizard-cancel').addEventListener('click', showWelcomeIntro);
-  $('btn-wizard-cancel-x').addEventListener('click', showWelcomeIntro);
+  $('btn-wizard-close').addEventListener('click', showWelcomeIntro);
 
   $('btn-gamestart-start').addEventListener('click', () => {
     playGameStartFanfare();
@@ -152,8 +150,6 @@
     $('xp-taskbar-task').hidden = false;
     enterCaptureScreen();
   });
-  $('btn-gamestart-exit').addEventListener('click', showWelcomeIntro);
-  $('btn-gamestart-close').addEventListener('click', showWelcomeIntro);
   $('btn-gamestart-exit').addEventListener('click', closeGameWindow);
   $('btn-gamestart-close').addEventListener('click', closeGameWindow);
 

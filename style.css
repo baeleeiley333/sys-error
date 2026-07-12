@@ -41,7 +41,7 @@ button { font-family: inherit; }
 #xp-desktop {
   min-height: 100vh;
   position: relative;
-  background: #2e7de0 url('assets/wallpaper.jpg') center bottom / cover no-repeat;
+  background: #2e7de0 url('assets/wallpaper2.jpg') center bottom / cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -138,15 +138,28 @@ button { font-family: inherit; }
 .screen-overlay { position: fixed; inset: 0; z-index: 800; padding: 0; background: transparent; }
 .screen-fullbleed { display: flex; align-items: center; justify-content: center; }
 
-/* Stage 1: a small floating dialog, cropped tight (no baked-in desktop
+/* A small floating wizard dialog, cropped tight (no baked-in desktop
    icons), sitting on top of the real WinXP desktop behind it. */
 .floating-dialog {
-  position: relative; width: min(86vw, 560px); cursor: pointer;
+  position: relative; width: min(86vw, 560px);
   box-shadow: 6px 8px 24px rgba(0,0,0,0.5);
   animation: dialogPopIn 0.5s cubic-bezier(.25,1.4,.4,1) both;
 }
-.floating-dialog img { width: 100%; height: auto; display: block; animation: breathe 5s ease-in-out infinite; }
+.floating-dialog img#welcome-dialog-bg { width: 100%; height: auto; display: block; cursor: pointer; animation: breathe 5s ease-in-out infinite; }
 @keyframes dialogPopIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* Clippy popup: hidden until the dialog is clicked, then pops in
+   anchored to the dialog's bottom-left corner (matching where Clippy
+   sits relative to the wizard box in the reference composite). */
+.clippy-popup {
+  position: absolute; left: -8%; bottom: -22%; width: 58%; height: auto;
+  pointer-events: none; z-index: 5;
+  filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.4));
+  opacity: 0; transform: translateY(14px) scale(0.9);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.25,1.4,.4,1);
+}
+.clippy-popup.visible { opacity: 1; transform: translateY(0) scale(1); animation: clippyBob 2.4s ease-in-out 0.35s infinite; }
+@keyframes clippyBob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1); } }
 
 /* Stage 2 / gamestart: the full reference image, letterboxed to its
    own aspect ratio so it never stretches, however wide the viewport. */
