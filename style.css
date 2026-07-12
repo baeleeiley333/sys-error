@@ -37,30 +37,17 @@ html, body {
 
 button { font-family: inherit; }
 
-/* ============ XP DESKTOP (Bliss-style sky/hill wallpaper) ============ */
+/* ============ XP DESKTOP (real wallpaper photo) ============ */
 #xp-desktop {
   min-height: 100vh;
   position: relative;
-  background:
-    radial-gradient(60px 34px at 12% 16%, rgba(255,255,255,0.95), rgba(255,255,255,0) 70%),
-    radial-gradient(90px 46px at 22% 20%, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%),
-    radial-gradient(70px 38px at 68% 10%, rgba(255,255,255,0.85), rgba(255,255,255,0) 70%),
-    radial-gradient(100px 50px at 82% 15%, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%),
-    radial-gradient(80px 40px at 45% 8%, rgba(255,255,255,0.75), rgba(255,255,255,0) 70%),
-    linear-gradient(180deg, #2e7de0 0%, #4f9aee 40%, #8fc4f5 68%, #bfe0f7 82%);
+  background: #2e7de0 url('assets/wallpaper.jpg') center bottom / cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px 12px 64px;
   overflow-x: hidden;
-}
-#xp-desktop::after {
-  content: '';
-  position: absolute; left: -10%; right: -10%; bottom: -18%; height: 46%;
-  background: radial-gradient(120% 100% at 50% 0%, #6fc24a 0%, #4b9e34 55%, #397f28 100%);
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  pointer-events: none; z-index: 0;
 }
 #xp-desktop-icons {
   position: absolute; top: 16px; left: 16px; z-index: 1;
@@ -72,6 +59,12 @@ button { font-family: inherit; }
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 .xp-icon-glyph { font-size: 26px; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5)); }
+.xp-icon-interactive {
+  cursor: pointer; padding: 4px; border-radius: 4px; border: 1px solid transparent;
+}
+.xp-icon-interactive:hover, .xp-icon-interactive:focus-visible {
+  background: rgba(30,90,200,0.35); border: 1px dotted rgba(255,255,255,0.7); outline: none;
+}
 #xp-window, #xp-taskbar { position: relative; z-index: 2; }
 
 #xp-window {
@@ -138,16 +131,71 @@ button { font-family: inherit; }
 /* ============ SHARED SCREEN WRAPPER ============ */
 .screen { padding: 18px; background: var(--bg-color); background-image: radial-gradient(var(--dot-color) 1px, transparent 1px); background-size: 18px 18px; }
 
+/* ============ WELCOME WIZARD (rentry.co/oldweb) ============ */
+.wizard-box {
+  max-width: 620px; margin: 30px auto; background: #c8c6bf; border: 2px solid #0a4a4a;
+  box-shadow: 4px 5px 16px rgba(0,0,0,0.4); font-family: Tahoma, sans-serif;
+}
+.wizard-titlebar {
+  display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+  background: linear-gradient(180deg, #1c7a7a, #0a4a4a);
+  color: #fff; font-size: 12px; font-weight: bold;
+}
+.wizard-titlebar span:nth-child(2) { flex: 1; }
+.wizard-titlebar-btns span {
+  width: 16px; height: 15px; background: #d8d8d8; border: 1px solid #063; border-radius: 1px;
+  display: flex; align-items: center; justify-content: center; font-size: 9px; color: #222; cursor: pointer;
+}
+.wizard-body { display: flex; gap: 16px; padding: 18px 20px; background: #eceae3; }
+.wizard-sidebar { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; width: 90px; }
+.wizard-sidebar-icon { font-size: 40px; }
+.wizard-sidebar-row { display: flex; gap: 8px; font-size: 22px; }
+.wizard-globe {
+  position: relative; width: 74px; height: 74px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #3fa8c9, #1a5f7a 60%, #0d3c50 100%);
+  box-shadow: inset -6px -6px 14px rgba(0,0,0,0.4);
+}
+.wizard-dot {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #7fe9d8;
+  box-shadow: 0 0 4px #7fe9d8; animation: dotPulse 1.8s ease-in-out infinite;
+}
+.wizard-dot:nth-child(2n) { animation-delay: 0.5s; }
+.wizard-dot:nth-child(3n) { animation-delay: 0.9s; }
+@keyframes dotPulse { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.3); } }
+.wizard-content { flex: 1; min-width: 0; }
+.wizard-content h2 {
+  margin: 0 0 10px; font-size: 17px; line-height: 1.3; color: #1a1a1a; font-weight: normal;
+}
+.wizard-accent { color: #0a7a7a; font-weight: bold; }
+.wizard-content p { margin: 0 0 8px; font-size: 12px; color: #333; line-height: 1.5; }
+.wizard-link { display: inline-block; margin: 4px 0 12px; color: #0645ad; text-decoration: underline; font-size: 12px; cursor: pointer; }
+.wizard-badges { display: flex; gap: 10px; }
+.wizard-badge {
+  display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #888;
+  padding: 4px 8px; font-size: 9px; color: #222; line-height: 1.3;
+}
+.badge-bars { display: flex; gap: 2px; }
+.badge-bars i { width: 4px; height: 16px; display: block; }
+.badge-bars i:nth-child(1) { background: #e0453f; }
+.badge-bars i:nth-child(2) { background: #3ea63e; }
+.badge-bars i:nth-child(3) { background: #3aa0ff; }
+.badge-bars i:nth-child(4) { background: #f0c020; }
+.badge-play { color: #1c5fd6; font-size: 16px; }
+.wizard-footer {
+  display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px 16px; background: #eceae3;
+  border-top: 1px solid #b8b5a2;
+}
+
 /* ============ CONSENT: CLIPPY ============ */
 .clippy-scene {
   max-width: 640px; margin: 40px auto; display: flex; align-items: flex-end; gap: 4px;
   font-family: Tahoma, sans-serif;
 }
-.clippy-figure { width: clamp(70px, 16vw, 100px); flex: none; animation: clippyBob 2.4s ease-in-out infinite; }
+.clippy-figure {
+  width: clamp(90px, 20vw, 130px); height: auto; flex: none; display: block;
+  animation: clippyBob 2.4s ease-in-out infinite;
+}
 @keyframes clippyBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
-.clippy-body-shine { opacity: 0.5; }
-.clippy-eye { animation: clippyBlink 4.5s ease-in-out infinite; transform-origin: center; }
-@keyframes clippyBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.15); } }
 
 .clippy-bubble {
   position: relative; background: #ffffe6; border: 2px solid #c8a951; border-radius: 8px;
@@ -173,6 +221,9 @@ button { font-family: inherit; }
 .xp-action-btn:hover { border-color: var(--xp-blue); }
 .xp-action-btn:active { transform: translateY(1px); }
 .xp-action-btn-secondary { color: #555; font-weight: normal; }
+.xp-action-btn:disabled { color: #999; cursor: not-allowed; opacity: 0.6; }
+.xp-action-btn:disabled:hover { border-color: #888; }
+.xp-action-btn:disabled:active { transform: none; }
 
 /* ============ CAPTCHA / VERIFY PANEL (capture + scan) ============ */
 .verification-stage {
@@ -340,52 +391,33 @@ aside#user-panel {
    plus the actual puzzle enlarged in its own floating window ---- */
 #duel-play { position: fixed; inset: 0; pointer-events: none; z-index: 700; }
 
-/* Windows-Media-Player-style mini widget */
+/* Windows-Media-Player-style mini widget (real WMP screenshot as chrome) */
 #wmp-widget {
-  position: fixed; right: 18px; bottom: 54px; width: 210px; pointer-events: auto;
-  background: #dce6f5; border: 1px solid #4b6fa5; border-radius: 6px 6px 3px 3px;
-  box-shadow: 3px 4px 12px rgba(0,0,0,0.5); overflow: hidden; font-family: Tahoma, sans-serif;
+  position: fixed; right: 18px; bottom: 54px; width: 210px; aspect-ratio: 1/1; pointer-events: auto;
+  background: #dce6f5 url('assets/wmp-skin.jpg') center / 100% 100% no-repeat;
+  box-shadow: 3px 4px 12px rgba(0,0,0,0.5); font-family: Tahoma, sans-serif;
 }
-.wmp-titlebar {
-  display: flex; align-items: center; gap: 5px; padding: 3px 5px;
-  background: linear-gradient(180deg, #4a90e0 0%, #2f6bc4 50%, #1f4f9e 100%);
-  color: #fff; font-size: 10px; font-weight: bold;
+.wmp-content-overlay {
+  position: absolute; left: 16%; right: 17.4%; top: 27.2%; bottom: 29.6%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  color: #123a6b;
 }
-.wmp-titlebar-text { flex: 1; }
-.wmp-titlebar-btns { display: flex; gap: 2px; font-size: 8px; }
-.wmp-titlebar-btns span {
-  width: 12px; height: 11px; background: rgba(255,255,255,0.25); border-radius: 2px;
-  display: flex; align-items: center; justify-content: center;
-}
-.wmp-screen { background: #0a1730; color: #cfe3ff; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.wmp-screen .duel-hud-avatar {
-  width: 48px; height: 48px; border-radius: 50%; border: 2px solid #6fa9f5;
+.wmp-content-overlay .duel-hud-avatar {
+  width: 30%; aspect-ratio: 1/1; border-radius: 50%; border: 2px solid #2f6bc4;
   background-size: cover; background-position: center;
 }
 #duel-hud-name { font-size: 11px; font-weight: bold; letter-spacing: 1px; }
-.wmp-status { font-size: 9px; color: #8fb3e6; }
-.wmp-controlbar { background: linear-gradient(180deg, #eaf1fb, #c9d9ef); padding: 5px 8px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: #234; }
-.wmp-play { font-weight: bold; }
-.wmp-seek { flex: 1; height: 4px; background: #9fb7d8; border-radius: 2px; overflow: hidden; }
-.wmp-seek-fill { width: 35%; height: 100%; background: #2f6bc4; animation: wmpSeek 8s linear infinite; }
-@keyframes wmpSeek { 0% { width: 5%; } 100% { width: 95%; } }
+.wmp-status { font-size: 9px; color: #3a6199; }
 
-/* pic_puzzle.exe: the enlarged, actually-playable puzzle window */
+/* pic_puzzle.exe: the enlarged, actually-playable puzzle window (real title bar screenshot) */
 #puzzle-window {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: auto;
   width: min(520px, 94vw); background: var(--xp-gray); border: 1px solid #6b6b6b;
   box-shadow: 4px 6px 20px rgba(0,0,0,0.55);
 }
 .puzzle-window-titlebar {
-  display: flex; align-items: center; gap: 6px; padding: 4px 8px;
-  background: linear-gradient(180deg, #3a78d8, #1c50a8);
-  color: #fff; font-family: Tahoma, sans-serif; font-size: 12px; font-weight: bold;
-}
-.puzzle-window-titlebar > span:nth-child(2) { flex: 1; text-align: left; }
-.puzzle-window-btns { display: flex; gap: 3px; }
-.puzzle-window-btns span {
-  width: 16px; height: 14px; background: #d8d8d8; border: 1px solid #888; border-radius: 1px;
-  display: flex; align-items: center; justify-content: center; font-size: 9px; color: #222;
+  height: clamp(24px, 5.4vw, 34px);
+  background: linear-gradient(180deg, #3a78d8, #1c50a8) url('assets/puzzle-window-titlebar.png') center / 100% 100% no-repeat;
 }
 .puzzle-window-body {
   background: var(--xp-gray); padding: 18px; display: flex; flex-direction: column; align-items: center;

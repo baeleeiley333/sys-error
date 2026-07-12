@@ -8,62 +8,23 @@
 </head>
 <body>
 
-  <!-- Reusable pixel-art dachshund sprite ("Roger") -->
-  <svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
-    <symbol id="pixel-dog" viewBox="0 0 216 102">
-      <g fill="currentColor">
-        <rect x="144" y="0" width="48" height="6" />
-        <rect x="138" y="6" width="60" height="6" />
-        <rect x="132" y="12" width="72" height="6" />
-        <rect x="126" y="18" width="12" height="6" />
-        <rect x="144" y="18" width="72" height="6" />
-        <rect x="120" y="24" width="12" height="6" />
-        <rect x="150" y="24" width="66" height="6" />
-        <rect x="0" y="30" width="12" height="6" />
-        <rect x="114" y="30" width="12" height="6" />
-        <rect x="156" y="30" width="60" height="6" />
-        <rect x="0" y="36" width="18" height="6" />
-        <rect x="48" y="36" width="72" height="6" />
-        <rect x="162" y="36" width="18" height="6" />
-        <rect x="186" y="36" width="12" height="6" />
-        <rect x="6" y="42" width="24" height="6" />
-        <rect x="42" y="42" width="126" height="6" />
-        <rect x="186" y="42" width="6" height="6" />
-        <rect x="12" y="48" width="162" height="6" />
-        <rect x="18" y="54" width="156" height="6" />
-        <rect x="24" y="60" width="150" height="6" />
-        <rect x="30" y="66" width="144" height="6" />
-        <rect x="36" y="72" width="138" height="6" />
-        <rect x="42" y="78" width="36" height="6" />
-        <rect x="114" y="78" width="18" height="6" />
-        <rect x="138" y="78" width="18" height="6" />
-        <rect x="42" y="84" width="36" height="6" />
-        <rect x="114" y="84" width="18" height="6" />
-        <rect x="138" y="84" width="18" height="6" />
-        <rect x="42" y="90" width="36" height="6" />
-        <rect x="114" y="90" width="18" height="6" />
-        <rect x="138" y="90" width="18" height="6" />
-        <rect x="36" y="96" width="48" height="6" />
-        <rect x="108" y="96" width="24" height="6" />
-        <rect x="138" y="96" width="24" height="6" />
-      </g>
-    </symbol>
-  </svg>
-
   <!-- ============ XP DESKTOP SHELL ============ -->
   <div id="xp-desktop">
-    <div id="xp-desktop-icons" aria-hidden="true">
-      <div class="xp-icon"><span class="xp-icon-glyph">🖥️</span><span>My Computer</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">🌐</span><span>The Internet</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">📁</span><span>Closed Folder</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">💾</span><span>Hard Drive</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">🗑️</span><span>Recycle Bin</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">📄</span><span>Internet Document</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">🖧</span><span>Network Neighborhood</span></div>
-      <div class="xp-icon"><span class="xp-icon-glyph">⚙️</span><span>Control Panel</span></div>
+    <div id="xp-desktop-icons">
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">🖥️</span><span>My Computer</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">🌐</span><span>The Internet</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">📁</span><span>Closed Folder</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">💾</span><span>Hard Drive</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">🗑️</span><span>Recycle Bin</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">📄</span><span>Internet Document</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">🖧</span><span>Network Neighborhood</span></div>
+      <div class="xp-icon" aria-hidden="true" tabindex="-1"><span class="xp-icon-glyph">⚙️</span><span>Control Panel</span></div>
+      <div class="xp-icon xp-icon-interactive" id="game-icon" role="button" tabindex="0" aria-label="Open Visual System 95">
+        <span class="xp-icon-glyph">🧩</span><span>Visual System 95</span>
+      </div>
     </div>
 
-    <div id="xp-window">
+    <div id="xp-window" hidden>
       <!-- title bar -->
       <div id="xp-titlebar">
         <div id="xp-titlebar-left">
@@ -81,21 +42,59 @@
         <span>File</span><span>Verify</span><span>Players</span><span>Help</span>
       </div>
 
+      <!-- ============ SCREEN: WELCOME WIZARD ============ -->
+      <section class="screen" id="screen-welcome">
+        <div class="wizard-box">
+          <div class="wizard-titlebar">
+            <span class="wizard-titlebar-icon">🖥️</span>
+            <span>rentry.co/oldweb</span>
+            <div class="wizard-titlebar-btns"><span id="btn-wizard-cancel-x">✕</span></div>
+          </div>
+          <div class="wizard-body">
+            <div class="wizard-sidebar">
+              <div class="wizard-sidebar-icon">🖥️</div>
+              <div class="wizard-sidebar-row"><span>📞</span><span>📝</span></div>
+              <div class="wizard-globe">
+                <span class="wizard-dot" style="left:28%;top:18%"></span>
+                <span class="wizard-dot" style="left:62%;top:28%"></span>
+                <span class="wizard-dot" style="left:42%;top:48%"></span>
+                <span class="wizard-dot" style="left:70%;top:62%"></span>
+                <span class="wizard-dot" style="left:22%;top:66%"></span>
+                <span class="wizard-dot" style="left:52%;top:76%"></span>
+              </div>
+            </div>
+            <div class="wizard-content">
+              <h2>Welcome To <span class="wizard-accent">Relationship&#8209;Triggered Visual System 95</span></h2>
+              <p>An interactive artwork that transforms human connection into real-time visuals.</p>
+              <p>When two people come close, the system is triggered. Distance data is captured, visualized, and
+                expressed through generative graphics and sound.</p>
+              <p>It's not just about distance — it's about presence.</p>
+              <span class="wizard-link">View our concept!</span>
+              <div class="wizard-badges">
+                <div class="wizard-badge">
+                  <span class="badge-bars"><i></i><i></i><i></i><i></i></span>
+                  <span>Best Viewed<br />800 x 600</span>
+                </div>
+                <div class="wizard-badge">
+                  <span class="badge-play">▶</span>
+                  <span>GET<br />Windows Media Player</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-footer">
+            <button class="xp-action-btn xp-action-btn-secondary" disabled>Help</button>
+            <button class="xp-action-btn xp-action-btn-secondary" disabled>&lt; Back</button>
+            <button class="xp-action-btn" id="btn-wizard-next">Next &gt;</button>
+            <button class="xp-action-btn xp-action-btn-secondary" id="btn-wizard-cancel">Cancel</button>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ SCREEN: CONSENT (Clippy) ============ -->
-      <section class="screen" id="screen-consent">
+      <section class="screen" id="screen-consent" hidden>
         <div class="clippy-scene">
-          <svg class="clippy-figure" viewBox="0 0 120 210" aria-hidden="true">
-            <path class="clippy-body" d="M60 18 C88 18 94 42 94 58 L94 152 C94 176 76 188 59 188 C43 188 28 177 28 156 L28 68 C28 54 38 48 47 48 C56 48 63 56 63 67 L63 142"
-              fill="none" stroke="#9095cf" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
-            <path class="clippy-body-shine" d="M60 18 C88 18 94 42 94 58 L94 152 C94 176 76 188 59 188 C43 188 28 177 28 156 L28 68 C28 54 38 48 47 48 C56 48 63 56 63 67 L63 142"
-              fill="none" stroke="#c3c7ef" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M35 30 Q45 21 55 28" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round" />
-            <path d="M63 26 Q73 17 85 24" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round" />
-            <ellipse class="clippy-eye" cx="44" cy="44" rx="10" ry="12" fill="#fff" stroke="#222" stroke-width="2" />
-            <ellipse class="clippy-eye" cx="73" cy="40" rx="10" ry="12" fill="#fff" stroke="#222" stroke-width="2" />
-            <circle class="clippy-pupil" cx="47" cy="47" r="4.5" fill="#1a1a1a" />
-            <circle class="clippy-pupil" cx="76" cy="43" r="4.5" fill="#1a1a1a" />
-          </svg>
+          <img class="clippy-figure" src="assets/clippy.png" alt="Clippy" />
           <div class="clippy-bubble">
             <p><strong>It looks like you're about to play a 9-tile photo duel!</strong></p>
             <p>All content from the camera is processed only in your browser. Nothing is uploaded. Nothing is
@@ -217,27 +216,16 @@
         <div id="duel-play" hidden>
           <!-- small "now playing" widget, pinned bottom-right of the whole desktop -->
           <div id="wmp-widget">
-            <div class="wmp-titlebar">
-              <span class="wmp-titlebar-icon">▶</span><span class="wmp-titlebar-text">Windows Media Player</span>
-              <div class="wmp-titlebar-btns"><span>_</span><span>▢</span><span>✕</span></div>
-            </div>
-            <div class="wmp-screen">
+            <div class="wmp-content-overlay">
               <div class="duel-hud-avatar" id="duel-hud-avatar"></div>
               <div id="duel-hud-name">PLAYER 1</div>
               <div class="wmp-status">Now Playing…</div>
-            </div>
-            <div class="wmp-controlbar">
-              <span>⏮</span><span class="wmp-play">▶</span><span>⏭</span>
-              <div class="wmp-seek"><div class="wmp-seek-fill"></div></div>
             </div>
           </div>
 
           <!-- the actual enlarged puzzle, its own floating window -->
           <div id="puzzle-window">
-            <div class="puzzle-window-titlebar">
-              <span class="puzzle-window-icon">🧩</span><span>pic_puzzle.exe — restore the photo</span>
-              <div class="puzzle-window-btns"><span>_</span><span>▢</span><span>✕</span></div>
-            </div>
+            <div class="puzzle-window-titlebar"></div>
             <div class="puzzle-window-body">
               <div id="duel-giant-timer">00:00.0</div>
               <div id="duel-camera-wrap">
@@ -260,17 +248,17 @@
       <section class="screen pixel-screen" id="screen-judge" hidden>
         <div id="judge-stage">
           <div id="judge-bubble"><span id="judge-bubble-text"></span></div>
-          <div id="judge-dog"><svg class="dog-icon" viewBox="0 0 216 102"><use href="#pixel-dog"></use></svg></div>
+          <div id="judge-dog"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
           <div id="judge-avatars">
             <div class="judge-avatar-slot">
-              <div class="squash-dog" aria-hidden="true"><svg class="dog-icon" viewBox="0 0 216 102"><use href="#pixel-dog"></use></svg></div>
+              <div class="squash-dog" aria-hidden="true"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
               <div class="judge-crown" id="judge-crown-1">👑</div>
               <div class="judge-avatar" id="judge-avatar-1"></div>
               <div class="judge-name p1-color">PLAYER 1</div>
               <div class="judge-time" id="judge-time-1">--:--.-</div>
             </div>
             <div class="judge-avatar-slot">
-              <div class="squash-dog" aria-hidden="true"><svg class="dog-icon" viewBox="0 0 216 102"><use href="#pixel-dog"></use></svg></div>
+              <div class="squash-dog" aria-hidden="true"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
               <div class="judge-crown" id="judge-crown-2">👑</div>
               <div class="judge-avatar" id="judge-avatar-2"></div>
               <div class="judge-name p2-color">PLAYER 2</div>
@@ -287,7 +275,7 @@
     <!-- ============ TASKBAR ============ -->
     <div id="xp-taskbar">
       <div id="xp-start-btn"><span id="xp-start-flag">⊞</span> start</div>
-      <div id="xp-taskbar-task">🔒 HumanVerify_Puzzle.exe</div>
+      <div id="xp-taskbar-task" hidden>🧩 Visual System 95</div>
       <div id="xp-clock">00:00</div>
     </div>
   </div>

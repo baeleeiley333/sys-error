@@ -35,6 +35,7 @@
   // Screen management
   // ---------------------------------------------------------
   const screens = {
+    welcome: $('screen-welcome'),
     consent: $('screen-consent'),
     capture: $('screen-capture'),
     scan: $('screen-scan'),
@@ -105,6 +106,28 @@
       mediaStream = null;
     }
   }
+
+  // ---------------------------------------------------------
+  // Desktop icon -> opens the app window on the welcome wizard
+  // ---------------------------------------------------------
+  function openGameWindow() {
+    $('xp-window').hidden = false;
+    $('xp-taskbar-task').hidden = false;
+    showScreen('welcome');
+  }
+
+  function closeGameWindow() {
+    resetAll();
+  }
+
+  $('game-icon').addEventListener('dblclick', openGameWindow);
+  $('game-icon').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGameWindow(); }
+  });
+
+  $('btn-wizard-next').addEventListener('click', () => showScreen('consent'));
+  $('btn-wizard-cancel').addEventListener('click', closeGameWindow);
+  $('btn-wizard-cancel-x').addEventListener('click', closeGameWindow);
 
   // ---------------------------------------------------------
   // Consent screen
@@ -906,7 +929,9 @@
     Object.values(timers).forEach((t) => { if (t.raf) cancelAnimationFrame(t.raf); t.finished = true; });
     stopCamera();
     groupPhotoDataUrl = null;
-    showScreen('consent');
+    showScreen('welcome');
+    $('xp-window').hidden = true;
+    $('xp-taskbar-task').hidden = true;
   }
 
   function tickClock() {
@@ -929,5 +954,5 @@
     }),
   };
 
-  showScreen('consent');
+  showScreen('welcome');
 })();
