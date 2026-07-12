@@ -576,6 +576,7 @@ aside#user-panel {
 .puzzle-piece.solved { border-color: transparent; }
 .puzzle-piece.picked-up { opacity: 0.15; }
 .puzzle-piece.drop-target { outline: 2px dashed var(--accent-cyan); outline-offset: -2px; }
+.puzzle-piece.hover-lock { outline: 2px dotted rgba(255,255,255,0.6); outline-offset: -2px; }
 
 .drag-ghost {
   position: absolute; width: 33.333%; height: 33.333%; pointer-events: none; display: none;

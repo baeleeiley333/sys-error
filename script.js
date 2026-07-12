@@ -16,9 +16,7 @@
 
   const CONFIG = {
     GRID: 3,
-    DWELL_MS: 700,
     PINCH_DIST: 0.06,
-    SELECT_COOLDOWN_MS: 450,
     VIDEO_W: 640,
     VIDEO_H: 480,
     MEDIAPIPE_VERSION: '0.10.14',
@@ -406,8 +404,12 @@
 
     if (drawBoxes) drawScanBoxes(ctx, [p1Box, p2Box]);
 
+    // player avatars are ready -- move on by itself, no confirm click needed
+    statusEl.textContent += '  STARTING GAME…';
     continueBtn.disabled = false;
-    continueBtn.textContent = 'READY? START GAME →';
+    continueBtn.textContent = 'START NOW →';
+    clearTimeout(scanAutoAdvanceTimer);
+    scanAutoAdvanceTimer = setTimeout(proceedFromScan, 1500);
   }
 
   function drawScanBoxes(ctx, boxes) {
@@ -423,8 +425,19 @@
     });
   }
 
-  $('btn-retake').addEventListener('click', () => enterCaptureScreen());
-  $('scan-continue-btn').addEventListener('click', () => startPixelSequence());
+  let scanAutoAdvanceTimer = null;
+  function proceedFromScan() {
+    clearTimeout(scanAutoAdvanceTimer);
+    scanAutoAdvanceTimer = null;
+    startPixelSequence();
+  }
+
+  $('btn-retake').addEventListener('click', () => {
+    clearTimeout(scanAutoAdvanceTimer);
+    scanAutoAdvanceTimer = null;
+    enterCaptureScreen();
+  });
+  $('scan-continue-btn').addEventListener('click', proceedFromScan);
 
   // ---------------------------------------------------------
   // Puzzle board
@@ -846,10 +859,7 @@
   // ---------------------------------------------------------
   let handLandmarker = null;
   let handLoopActive = false;
-  let gestureState = {
-    lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false,
-    dragging: false, dragFromPos: null,
-  };
+  let gestureState = { lastCell: -1, wasPinch: false, dragging: false, dragFromPos: null };
   let lastPromptState = null;
 
   function setDuelPrompt(text, ok) {
@@ -880,13 +890,10 @@
       return;
     }
 
-    setDuelPrompt('✋ SHOW YOUR HAND — HOVER (0.7s), OR PINCH • DRAG • RELEASE A TILE', true);
+    setDuelPrompt('✋ SHOW YOUR HAND — 🤏 PINCH A TILE, DRAG IT, RELEASE TO DROP', true);
     handLoopActive = true;
     lastPromptState = null;
-    gestureState = {
-      lastCell: -1, dwellStart: 0, lastTrigger: 0, wasPinch: false,
-      dragging: false, dragFromPos: null,
-    };
+    gestureState = { lastCell: -1, wasPinch: false, dragging: false, dragFromPos: null };
     const cursor = $('duel-cursor');
     cursor.classList.remove('p2');
     if (activeBoard && activeBoard.playerId === 2) cursor.classList.add('p2');
@@ -897,6 +904,7 @@
     handLoopActive = false;
     hideCursor();
     cancelDrag();
+    clearHoverLock();
   }
 
   function cancelDrag() {
@@ -925,7 +933,7 @@
     if (landmarks.length === 0) {
       hideCursor();
       cancelDrag();
-      gestureState.dwellStart = 0;
+      clearHoverLock();
       gestureState.lastCell = -1;
       gestureState.wasPinch = false;
       setDuelPrompt('⚠ SHOW YOUR HAND TO THE CAMERA', false);
@@ -948,7 +956,7 @@
     setPinchVisual(pinching);
     handleHover(mx, my, pinching, now);
     setDuelPrompt(
-      gestureState.dragging ? '🤏 DRAGGING — RELEASE TO DROP THE TILE' : '✋ TRACKING HAND — PINCH • DRAG • RELEASE, OR HOVER TO SWAP',
+      gestureState.dragging ? '🤏 DRAGGING — RELEASE TO DROP THE TILE' : '✋ TRACKING HAND — 🤏 PINCH A TILE TO GRAB IT',
       true
     );
   }
@@ -967,8 +975,8 @@
     const outOfBounds = lx < 0 || lx > 1 || ly < 0 || ly > 1;
 
     if (outOfBounds) {
-      st.dwellStart = 0;
       st.lastCell = -1;
+      clearHoverLock();
       // released off-frame mid-drag -- cancel rather than guess a drop target
       if (st.dragging && st.wasPinch && !pinching) cancelDrag();
       st.wasPinch = pinching;
@@ -983,7 +991,6 @@
       board.pickUp(pos);
       st.dragging = true;
       st.dragFromPos = pos;
-      st.dwellStart = 0;
     } else if (!pinching && st.wasPinch && st.dragging) {
       board.dropAt(st.dragFromPos, pos);
       st.dragging = false;
@@ -993,28 +1000,33 @@
       clearDropTargets();
     }
     st.wasPinch = pinching;
+    st.lastCell = pos;
 
     if (st.dragging) {
       updateDragGhost(lx, ly, true);
       highlightDropTarget(pos);
+      clearHoverLock();
       return;
     }
     updateDragGhost(lx, ly, false);
 
-    // --- fallback: hover-dwell to select, hover again to swap ---
-    if (!pinching) {
-      if (st.lastCell !== pos) {
-        st.lastCell = pos;
-        st.dwellStart = now;
-      } else if (st.dwellStart && now - st.dwellStart > CONFIG.DWELL_MS && now - st.lastTrigger > CONFIG.SELECT_COOLDOWN_MS) {
-        board.select(pos);
-        st.lastTrigger = now;
-        st.dwellStart = now;
-      }
-    }
+    // a bare finger can only lock onto (highlight) the cell it's over --
+    // it cannot select or grab a tile; only a pinch can do that
+    if (pinching) clearHoverLock(); else highlightHoverLock(pos);
   }
 
   let dropTargetPos = null;
+  let hoverLockPos = null;
+  function highlightHoverLock(pos) {
+    if (!activeBoard || pos === hoverLockPos) return;
+    clearHoverLock();
+    activeBoard.pieces[pos].classList.add('hover-lock');
+    hoverLockPos = pos;
+  }
+  function clearHoverLock() {
+    if (activeBoard && hoverLockPos !== null) activeBoard.pieces[hoverLockPos].classList.remove('hover-lock');
+    hoverLockPos = null;
+  }
   function highlightDropTarget(pos) {
     if (!activeBoard || pos === dropTargetPos) return;
     clearDropTargets();
@@ -1092,6 +1104,9 @@
     handLoopActive = false;
     hideDragGhost();
     clearDropTargets();
+    clearHoverLock();
+    clearTimeout(scanAutoAdvanceTimer);
+    scanAutoAdvanceTimer = null;
     captureLoopActive = false;
     duelResolve = null;
     activeBoard = null;
