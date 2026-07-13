@@ -41,7 +41,7 @@ button { font-family: inherit; }
 #xp-desktop {
   min-height: 100vh;
   position: relative;
-  background: #2e7de0 url('assets/wallpaper2.jpg') center bottom / cover no-repeat;
+  background: #4c8fd3 url('assets/wallpaper2.jpg') center bottom / contain no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
