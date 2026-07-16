@@ -96,6 +96,10 @@
       t += dur * 0.82;
     });
   };
+  const playKoImpact = () => {
+    beep(90, 0.14, 'square', 0.22);
+    setTimeout(() => beep(55, 0.2, 'sawtooth', 0.18), 60);
+  };
 
   function speak(text, opts = {}) {
     try {
@@ -789,15 +793,17 @@
   function resetJudgeVisualState() {
     [1, 2].forEach((p) => {
       $('judge-avatar-' + p).classList.remove('winner', 'loser');
+      $('judge-avatar-' + p).style.animation = ''; // release the loserFly*/forwards lock for the next round
       $('judge-crown-' + p).classList.remove('show');
     });
-    document.querySelectorAll('.squash-dog').forEach((el) => el.classList.remove('show'));
     document.querySelectorAll('.judge-avatar-slot').forEach((el) => el.classList.remove('winner-slot'));
     const dog = $('judge-dog');
     dog.style.opacity = '1';
     dog.classList.remove('bounce');
     $('judge-bubble').style.opacity = '0';
     $('judge-confetti').innerHTML = '';
+    $('judge-ko-text').classList.remove('show');
+    $('judge-glass').classList.remove('show');
     $('judge-winner-banner').classList.remove('show');
     $('judge-winner-text').textContent = '';
     $('judge-epilogue').hidden = true;
@@ -845,26 +851,33 @@
     const winner = t1 === t2 ? (Math.random() < 0.5 ? 1 : 2) : (t1 < t2 ? 1 : 2);
     const loser = winner === 1 ? 2 : 1;
 
-    $('judge-avatar-' + winner).classList.add('winner');
-    $('judge-crown-' + winner).classList.add('show');
-    $('judge-avatar-' + loser).classList.add('loser');
-    $('judge-avatar-' + winner).closest('.judge-avatar-slot').classList.add('winner-slot');
-    $('judge-winner-text').textContent = `PLAYER ${winner} WINS!`;
-    $('judge-winner-banner').classList.add('show');
-    flashScreen();
-    shakeStage();
-    spawnConfetti();
-    playWinFanfare();
-    speak(`Player ${winner} wins!`);
-    await sleep(400);
-
     dog.classList.remove('bounce');
     dog.style.animation = 'none'; // release the dogHop fill-forwards lock so opacity below actually takes
     dog.style.opacity = '0';
-    const squashDog = $('judge-avatar-' + loser).closest('.judge-avatar-slot').querySelector('.squash-dog');
-    squashDog.classList.add('show');
 
-    await sleep(1400);
+    // the K.O. punch lands: flash, shake, impact text, glass appears
+    flashScreen();
+    shakeStage();
+    playKoImpact();
+    $('judge-ko-text').classList.add('show');
+    $('judge-glass').classList.add('show');
+    await sleep(250);
+
+    // loser gets sent flying into the glass
+    $('judge-avatar-' + loser).classList.add('loser');
+    spawnConfetti();
+    await sleep(500);
+
+    // winner gets crowned and announced
+    $('judge-avatar-' + winner).classList.add('winner');
+    $('judge-crown-' + winner).classList.add('show');
+    $('judge-avatar-' + winner).closest('.judge-avatar-slot').classList.add('winner-slot');
+    $('judge-winner-text').textContent = `PLAYER ${winner} WINS!`;
+    $('judge-winner-banner').classList.add('show');
+    playWinFanfare();
+    speak(`Player ${winner} wins!`);
+
+    await sleep(1600);
     await showEpilogue();
     $('judge-epilogue').hidden = true;
     $('btn-play-again').hidden = false;

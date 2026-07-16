@@ -219,10 +219,11 @@
         </div>
       </section>
 
-      <!-- ============ SCREEN: JUDGE (Roger the dog + winner/loser) ============ -->
+      <!-- ============ SCREEN: JUDGE (Roger the dog + fight-game K.O.) ============ -->
       <section class="screen pixel-screen" id="screen-judge" hidden>
         <div id="judge-flash" aria-hidden="true"></div>
         <div id="judge-confetti" aria-hidden="true"></div>
+        <div id="judge-ko-text" aria-hidden="true">K.O.</div>
         <div id="judge-winner-banner"><span id="judge-winner-text"></span></div>
         <div id="judge-stage">
           <div id="judge-bubble"><span id="judge-bubble-text"></span></div>
@@ -230,7 +231,6 @@
           <div id="judge-avatars">
             <div class="judge-avatar-slot">
               <div class="winner-burst" aria-hidden="true"></div>
-              <div class="squash-dog" aria-hidden="true"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
               <div class="judge-crown" id="judge-crown-1">👑</div>
               <div class="judge-avatar" id="judge-avatar-1"></div>
               <div class="judge-name p1-color">PLAYER 1</div>
@@ -238,13 +238,13 @@
             </div>
             <div class="judge-avatar-slot">
               <div class="winner-burst" aria-hidden="true"></div>
-              <div class="squash-dog" aria-hidden="true"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
               <div class="judge-crown" id="judge-crown-2">👑</div>
               <div class="judge-avatar" id="judge-avatar-2"></div>
               <div class="judge-name p2-color">PLAYER 2</div>
               <div class="judge-time" id="judge-time-2">--:--.-</div>
             </div>
           </div>
+          <div id="judge-glass" aria-hidden="true">🍷</div>
         </div>
         <div id="judge-epilogue" hidden>
           <div id="epilogue-status">

@@ -525,24 +525,62 @@ aside#user-panel {
   transition: filter 0.6s ease, transform 0.5s cubic-bezier(.4,0,.6,1), box-shadow 0.5s ease;
 }
 .judge-avatar.winner { border-color: gold; box-shadow: 0 0 30px rgba(255,215,0,0.8); transform: scale(1.15); }
-.judge-avatar.loser { filter: grayscale(1) brightness(0.45); transform: scaleY(0.35) translateY(30%); }
+/* loser gets punched -- flies offscreen toward the glass at bottom-center
+   and lands inside it; slot 1 (left) and slot 2 (right) mirror the arc */
+#judge-avatar-1.loser { animation: loserFlyRight 0.7s cubic-bezier(.5,-0.2,.7,.4) forwards; }
+#judge-avatar-2.loser { animation: loserFlyLeft 0.7s cubic-bezier(.5,-0.2,.7,.4) forwards; }
+@keyframes loserFlyRight {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); filter: grayscale(0) brightness(1); opacity: 1; }
+  22% { transform: translate(14px, -22px) scale(1.08) rotate(-14deg); filter: grayscale(0.4) brightness(1.3); }
+  100% { transform: translate(85px, 150px) scale(0.2) rotate(320deg); filter: grayscale(1) brightness(0.6); opacity: 0; }
+}
+@keyframes loserFlyLeft {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); filter: grayscale(0) brightness(1); opacity: 1; }
+  22% { transform: translate(-14px, -22px) scale(1.08) rotate(14deg); filter: grayscale(0.4) brightness(1.3); }
+  100% { transform: translate(-85px, 150px) scale(0.2) rotate(-320deg); filter: grayscale(1) brightness(0.6); opacity: 0; }
+}
 .judge-crown {
   position: absolute; top: -22px; left: 50%; transform: translateX(-50%) scale(0);
   font-size: 28px; transition: transform 0.4s cubic-bezier(.3,1.8,.4,1); z-index: 2;
 }
 .judge-crown.show { transform: translateX(-50%) scale(1); }
-.squash-dog {
-  position: absolute; top: -6px; left: 50%; width: 46px; color: #6b4a2c; z-index: 3;
-  transform: translate(-50%, -60px) scale(0.6); opacity: 0;
-}
-.squash-dog.show { animation: dogLand 0.5s cubic-bezier(.3,1.6,.4,1) forwards; }
-@keyframes dogLand {
-  0% { transform: translate(-50%, -60px) scale(0.6); opacity: 0; }
-  70% { transform: translate(-50%, 6px) scale(1.05); opacity: 1; }
-  100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
-}
 .judge-name { font-size: 9px; letter-spacing: 1px; }
 .judge-time { font-size: 9px; color: #999; font-variant-numeric: tabular-nums; }
+
+#judge-glass {
+  position: absolute; left: 50%; bottom: -4%; z-index: 6; pointer-events: none;
+  transform: translateX(-50%) scale(0); opacity: 0;
+  font-size: clamp(38px, 8vw, 66px); filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.5));
+}
+#judge-glass.show {
+  animation: glassPopIn 0.3s ease-out forwards, glassClink 0.4s ease-in-out 0.85s;
+}
+@keyframes glassPopIn { to { opacity: 1; transform: translateX(-50%) scale(1); } }
+@keyframes glassClink {
+  0%, 100% { transform: translateX(-50%) scale(1) rotate(0deg); }
+  30% { transform: translateX(-50%) scale(1.18) rotate(-10deg); }
+  60% { transform: translateX(-50%) scale(1.1) rotate(8deg); }
+}
+
+/* ---- JUDGE: fight-game radial burst instead of a flat black background ---- */
+#screen-judge {
+  background:
+    repeating-conic-gradient(from 0deg, rgba(255,205,90,0.22) 0deg 4deg, transparent 4deg 12deg),
+    radial-gradient(circle at 50% 42%, #ffb454 0%, #ff6a3d 28%, #b8272c 62%, #300808 100%);
+}
+#judge-ko-text {
+  position: absolute; top: 20%; left: 50%; z-index: 47; pointer-events: none;
+  transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0;
+  font-size: clamp(46px, 11vw, 100px); font-weight: 900; letter-spacing: 2px;
+  color: #ffe066; -webkit-text-stroke: 4px #7a0000; paint-order: stroke fill;
+  text-shadow: 0 0 22px rgba(255,224,102,0.9), 4px 4px 0 #7a0000, 0 0 46px rgba(255,110,40,0.85);
+}
+#judge-ko-text.show { animation: koImpact 0.5s cubic-bezier(.2,1.9,.4,1) forwards; }
+@keyframes koImpact {
+  0% { opacity: 0; transform: translateX(-50%) scale(2.8) rotate(-16deg); }
+  55% { opacity: 1; transform: translateX(-50%) scale(0.85) rotate(5deg); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(-4deg); }
+}
 
 /* ---- JUDGE: winner flash / confetti / burst rays / banner ---- */
 #judge-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
