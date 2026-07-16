@@ -295,6 +295,24 @@ aside#user-panel {
   padding: 5px 10px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;
 }
 
+/* ---- Capture screen: white + pink theme (scan screen keeps the
+   original dark terminal look, only the photo-capture screen changes) ---- */
+#screen-capture { background: #fff; background-image: radial-gradient(#ffd6ec 1px, transparent 1px); }
+#screen-capture .verification-stage { background: #fff; box-shadow: 0 0 20px rgba(255,95,209,0.25); }
+#screen-capture header { color: #333; }
+#screen-capture .sys-subtitle { color: #d688b3; }
+#screen-capture .sys-title { color: var(--accent-magenta); }
+#screen-capture #prompt-text { color: var(--accent-magenta); }
+#screen-capture #capture-area { background: #fff0f8; border-color: var(--accent-magenta); }
+#screen-capture footer.controls { border-color: var(--accent-magenta); }
+#screen-capture .icon-btn { color: var(--accent-magenta); }
+#screen-capture #verify-btn { background: var(--accent-magenta); color: #fff; }
+#screen-capture #verify-btn:disabled { background: #f3b8dc; }
+#screen-capture #user-avatar-container { border-color: var(--accent-magenta); }
+#screen-capture #id-tag { background: var(--accent-magenta); }
+#screen-capture #no-camera-hint { color: #d6368f; }
+#screen-capture #no-camera-hint span { color: #b87ba0; }
+
 /* ============ COUNTDOWN (shared overlay, used per duel turn) ============ */
 #screen-countdown {
   position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,0.85);
