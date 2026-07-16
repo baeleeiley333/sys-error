@@ -268,12 +268,19 @@
           </div>
         </div>
 
-        <!-- real fight-game K.O. splash, 1:1 -->
-        <div class="judge-ko-frame" id="judge-ko-splash" aria-hidden="true"></div>
+        <!-- real fight-game action video: punch, kick, K.O. splash -->
+        <video class="judge-ko-frame" id="judge-video-action" muted playsinline preload="auto" aria-hidden="true">
+          <source src="assets/win-action.webm" type="video/webm" />
+          <source src="assets/win-action.mp4" type="video/mp4" />
+        </video>
 
-        <!-- winner reveal: real character art + our own dynamic text/photos -->
+        <!-- winner reveal: real character video + our own dynamic text/photos -->
         <div id="judge-winpose" aria-hidden="true">
           <div id="winpose-character">
+            <video id="judge-video-character" muted playsinline loop preload="auto">
+              <source src="assets/win-character.webm" type="video/webm" />
+              <source src="assets/win-character.mp4" type="video/mp4" />
+            </video>
             <div id="winpose-winner-avatar"></div>
           </div>
           <div id="winpose-loser-avatar"></div>

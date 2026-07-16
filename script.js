@@ -800,8 +800,14 @@
     });
     $('judge-confetti').innerHTML = '';
 
-    $('judge-ko-splash').classList.remove('show', 'hide');
-    $('judge-ko-splash').style.animation = ''; // release the koFrame*/forwards lock for the next round
+    const actionVideo = $('judge-video-action');
+    actionVideo.classList.remove('show', 'hide');
+    actionVideo.style.animation = ''; // release the koFrame*/forwards lock for the next round
+    actionVideo.pause();
+    actionVideo.currentTime = 0;
+    const charVideo = $('judge-video-character');
+    charVideo.pause();
+    charVideo.currentTime = 0;
     $('judge-winpose').classList.remove('show');
     $('winpose-winner-avatar').style.animation = '';
     $('winpose-loser-avatar').classList.remove('fly');
@@ -872,22 +878,30 @@
 
     $('judge-stage').style.opacity = '0'; // the K.O. frames below fade to transparent, don't let this bleed through
 
-    // FRAME: real "K.O." splash graphic -- the punch lands
+    // FRAME: real fight-sequence video -- the winner punches, kicks the
+    // loser flying, and the screen erupts into the K.O. splash
     flashScreen();
     shakeStage();
     playKoImpact();
-    $('judge-ko-splash').classList.add('show');
-    await sleep(750);
+    const actionVideo = $('judge-video-action');
+    actionVideo.currentTime = 0;
+    actionVideo.play().catch(() => { /* autoplay blocked, the frame still shows via poster/first-frame */ });
+    actionVideo.classList.add('show');
+    await sleep(5625); // exact duration of win-action.mp4
 
-    // FRAME 3: winner reveal on the real "raises fist" character art, with
+    // FRAME 3: winner reveal on the real "raises fist" character video, with
     // our own dynamic PLAYER X WIN text + real avatar photos composited on
-    // top (the reference image's own text/photos were layout reference only)
-    $('judge-ko-splash').classList.add('hide');
+    // top (the reference video's own baked "PLAYER 1 WIN" text is cropped
+    // out of frame -- this clip only shows the character + the black ball)
+    actionVideo.classList.add('hide');
     $('winpose-winner-avatar').style.backgroundImage = `url(${players[winner].avatar})`;
     $('winpose-loser-avatar').style.backgroundImage = `url(${players[loser].avatar})`;
     $('winpose-player-label').textContent = `PLAYER ${winner}`;
     $('winpose-time-1').textContent = formatTime(timers[1].elapsed);
     $('winpose-time-2').textContent = formatTime(timers[2].elapsed);
+    const charVideo = $('judge-video-character');
+    charVideo.currentTime = 0;
+    charVideo.play().catch(() => { /* autoplay blocked, the frame still shows via poster/first-frame */ });
     $('judge-winpose').classList.add('show');
     spawnConfetti();
     playWinFanfare();
