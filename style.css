@@ -422,8 +422,9 @@ aside#user-panel {
   background: #111; border: 1px solid #444; padding: 8px 6px; color: #ccc;
   font-size: 8px; line-height: 1.4; text-align: left;
 }
-.gesture-guide-icon { font-size: 20px; text-align: center; }
+.gesture-guide-icon { font-size: 15px; text-align: center; white-space: nowrap; }
 .gesture-guide-step b { color: var(--accent-cyan); }
+.gesture-guide-note { color: #888; font-style: italic; font-size: 7px; }
 
 /* ---- JUDGE: Roger the dog + winner/loser ---- */
 #judge-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
@@ -604,7 +605,7 @@ aside#user-panel {
   transition: left 0.06s linear, top 0.06s linear;
 }
 .hand-cursor.p2 { border-color: var(--accent-magenta); box-shadow: 0 0 10px rgba(255,95,209,0.8); }
-.hand-cursor.pinch { background: rgba(255,255,255,0.5); transform: translate(-50%, -50%) scale(0.7); }
+.hand-cursor.fist { background: rgba(255,255,255,0.5); transform: translate(-50%, -50%) scale(0.7); }
 
 .win-flag {
   position: absolute; inset: 0; display: none; align-items: center; justify-content: center;

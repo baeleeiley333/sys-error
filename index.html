@@ -194,7 +194,7 @@
                 <video id="gesture-video" autoplay playsinline muted></video>
                 <canvas id="gesture-overlay"></canvas>
               </div>
-              <div id="duel-prompt">⚠ SHOW YOUR HAND — 🤏 PINCH A TILE, DRAG IT, RELEASE TO DROP</div>
+              <div id="duel-prompt">⚠ SHOW YOUR HAND — ✊ MAKE A FIST TO GRAB, ✋ OPEN TO DROP</div>
               <div id="duel-puzzle-row">
                 <div class="puzzle-wrap" id="duel-puzzle-wrap">
                   <div class="puzzle-board" id="duel-board"></div>
@@ -203,10 +203,11 @@
                   <div class="win-flag" id="duel-winflag">SOLVED!</div>
                 </div>
                 <div id="gesture-guide" aria-hidden="true">
-                  <span class="gesture-guide-icon">🤏</span>
-                  <span class="gesture-guide-step"><b>PINCH</b> a tile to grab it</span>
-                  <span class="gesture-guide-step"><b>MOVE</b> your hand to drag it</span>
-                  <span class="gesture-guide-step"><b>RELEASE</b> to drop it there</span>
+                  <span class="gesture-guide-icon">✊ → ✋</span>
+                  <span class="gesture-guide-step"><b>✊ FIST</b> over a tile = grab it</span>
+                  <span class="gesture-guide-step"><b>MOVE</b> hand = drag the tile</span>
+                  <span class="gesture-guide-step"><b>✋ OPEN HAND</b> = drop it there</span>
+                  <span class="gesture-guide-step gesture-guide-note">a single pointing finger only aims — it can't grab</span>
                 </div>
               </div>
               <button class="manual-toggle" id="duel-manual-toggle">🖱 Manual Mode</button>

@@ -16,7 +16,7 @@
 
   const CONFIG = {
     GRID: 3,
-    PINCH_DIST: 0.06,
+    GESTURE_HOLD_FRAMES: 4,
     VIDEO_W: 640,
     VIDEO_H: 480,
     MEDIAPIPE_VERSION: '0.10.14',
@@ -248,6 +248,14 @@
   function isPeaceSign(lm) {
     return fingerExtended(lm, 8, 6) && fingerExtended(lm, 12, 10) &&
       !fingerExtended(lm, 16, 14) && !fingerExtended(lm, 20, 18);
+  }
+  function isFist(lm) {
+    return !fingerExtended(lm, 8, 6) && !fingerExtended(lm, 12, 10) &&
+      !fingerExtended(lm, 16, 14) && !fingerExtended(lm, 20, 18);
+  }
+  function isOpenPalm(lm) {
+    return fingerExtended(lm, 8, 6) && fingerExtended(lm, 12, 10) &&
+      fingerExtended(lm, 16, 14) && fingerExtended(lm, 20, 18);
   }
 
   const PEACE_HOLD_MS = 700;
@@ -859,7 +867,10 @@
   // ---------------------------------------------------------
   let handLandmarker = null;
   let handLoopActive = false;
-  let gestureState = { lastCell: -1, wasPinch: false, dragging: false, dragFromPos: null };
+  let gestureState = {
+    lastCell: -1, dragging: false, dragFromPos: null,
+    pendingGesture: null, pendingFrames: 0, confirmed: 'other',
+  };
   let lastPromptState = null;
 
   function setDuelPrompt(text, ok) {
@@ -890,10 +901,13 @@
       return;
     }
 
-    setDuelPrompt('✋ SHOW YOUR HAND — 🤏 PINCH A TILE, DRAG IT, RELEASE TO DROP', true);
+    setDuelPrompt('✋ SHOW YOUR HAND — ✊ MAKE A FIST TO GRAB, ✋ OPEN TO DROP', true);
     handLoopActive = true;
     lastPromptState = null;
-    gestureState = { lastCell: -1, wasPinch: false, dragging: false, dragFromPos: null };
+    gestureState = {
+      lastCell: -1, dragging: false, dragFromPos: null,
+      pendingGesture: null, pendingFrames: 0, confirmed: 'other',
+    };
     const cursor = $('duel-cursor');
     cursor.classList.remove('p2');
     if (activeBoard && activeBoard.playerId === 2) cursor.classList.add('p2');
@@ -935,28 +949,38 @@
       cancelDrag();
       clearHoverLock();
       gestureState.lastCell = -1;
-      gestureState.wasPinch = false;
+      gestureState.pendingGesture = null;
+      gestureState.pendingFrames = 0;
+      gestureState.confirmed = 'other';
       setDuelPrompt('⚠ SHOW YOUR HAND TO THE CAMERA', false);
       return;
     }
 
     const lm = landmarks[0];
-    const indexTip = lm[8];
-    const thumbTip = lm[4];
-    const mx = clamp01(1 - indexTip.x); // mirror to match displayed (selfie) view
-    const my = clamp01(indexTip.y);
+    // palm center (wrist + middle-finger knuckle) stays put whether the
+    // hand is a fist or an open palm, so the cursor/ghost don't jump
+    // when the grab gesture changes shape
+    const wrist = lm[0], palmBase = lm[9];
+    const mx = clamp01(1 - (wrist.x + palmBase.x) / 2); // mirror to match displayed (selfie) view
+    const my = clamp01((wrist.y + palmBase.y) / 2);
     updateCursor(mx, my);
 
-    const dist = Math.hypot(
-      indexTip.x - thumbTip.x,
-      indexTip.y - thumbTip.y,
-      (indexTip.z || 0) - (thumbTip.z || 0)
-    );
-    const pinching = dist < CONFIG.PINCH_DIST;
-    setPinchVisual(pinching);
-    handleHover(mx, my, pinching, now);
+    const st = gestureState;
+    const raw = isFist(lm) ? 'fist' : (isOpenPalm(lm) ? 'open' : 'other');
+    if (raw === st.pendingGesture) {
+      st.pendingFrames++;
+    } else {
+      st.pendingGesture = raw;
+      st.pendingFrames = 1;
+    }
+    // require a few consecutive matching frames before acting on it, so
+    // a flickering hand-pose reading can't misfire a grab or a drop
+    if (st.pendingFrames >= CONFIG.GESTURE_HOLD_FRAMES) st.confirmed = raw;
+
+    setFistVisual(st.confirmed === 'fist');
+    handleHover(mx, my, now);
     setDuelPrompt(
-      gestureState.dragging ? '🤏 DRAGGING — RELEASE TO DROP THE TILE' : '✋ TRACKING HAND — 🤏 PINCH A TILE TO GRAB IT',
+      gestureState.dragging ? '✊ HOLDING — OPEN YOUR HAND TO DROP THE TILE' : '✋ TRACKING HAND — ✊ MAKE A FIST TO GRAB A TILE',
       true
     );
   }
@@ -968,7 +992,7 @@
     return row * n + col;
   }
 
-  function handleHover(lx, ly, pinching, now) {
+  function handleHover(lx, ly, now) {
     const board = activeBoard;
     const st = gestureState;
     if (!board || board.solved) return;
@@ -977,29 +1001,29 @@
     if (outOfBounds) {
       st.lastCell = -1;
       clearHoverLock();
-      // released off-frame mid-drag -- cancel rather than guess a drop target
-      if (st.dragging && st.wasPinch && !pinching) cancelDrag();
-      st.wasPinch = pinching;
+      // opened off-frame mid-drag -- cancel rather than guess a drop target
+      if (st.dragging && st.confirmed === 'open') cancelDrag();
       updateDragGhost(lx, ly, false);
       return;
     }
 
     const pos = posFromCoords(lx, ly);
 
-    // --- pinch to grab, drag to move, release to drop ---
-    if (pinching && !st.wasPinch && !st.dragging) {
+    // --- hold a fist to grab, drag it around, open the hand to drop it ---
+    // (the `!st.dragging` / `st.dragging` guards make each transition
+    // fire exactly once per fist->open cycle, no matter how many frames
+    // the confirmed pose is held for)
+    if (st.confirmed === 'fist' && !st.dragging) {
       board.pickUp(pos);
       st.dragging = true;
       st.dragFromPos = pos;
-    } else if (!pinching && st.wasPinch && st.dragging) {
+    } else if (st.confirmed === 'open' && st.dragging) {
       board.dropAt(st.dragFromPos, pos);
       st.dragging = false;
       st.dragFromPos = null;
-      st.lastTrigger = now;
       hideDragGhost();
       clearDropTargets();
     }
-    st.wasPinch = pinching;
     st.lastCell = pos;
 
     if (st.dragging) {
@@ -1010,9 +1034,9 @@
     }
     updateDragGhost(lx, ly, false);
 
-    // a bare finger can only lock onto (highlight) the cell it's over --
-    // it cannot select or grab a tile; only a pinch can do that
-    if (pinching) clearHoverLock(); else highlightHoverLock(pos);
+    // an open hand or a bare finger can only lock onto (highlight) the
+    // cell it's over -- only a held fist can grab a tile
+    if (st.confirmed === 'fist') clearHoverLock(); else highlightHoverLock(pos);
   }
 
   let dropTargetPos = null;
@@ -1058,7 +1082,7 @@
     el.style.top = `${clamp01(ly) * 100}%`;
   }
   function hideCursor() { $('duel-cursor').style.display = 'none'; }
-  function setPinchVisual(pinching) { $('duel-cursor').classList.toggle('pinch', pinching); }
+  function setFistVisual(fisted) { $('duel-cursor').classList.toggle('fist', fisted); }
 
   function drawSkeleton(result) {
     const canvas = $('gesture-overlay');
