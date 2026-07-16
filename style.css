@@ -169,9 +169,19 @@ button { font-family: inherit; }
 @keyframes clippyBob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1); } }
 
 /* Stage 2 / gamestart: the full reference image, letterboxed to its
-   own aspect ratio so it never stretches, however wide the viewport. */
+   own aspect ratio so it never stretches, however wide the viewport.
+   A blurred cover-cropped copy of the same image fills the rest of
+   the screen behind it, so there's never empty/flat backdrop showing
+   -- the crisp foreground copy keeps its exact scale and position so
+   the Start/Exit/Close hotspots stay correctly aligned to the art. */
+#screen-gamestart { overflow: hidden; }
+#screen-gamestart::before {
+  content: ''; position: absolute; inset: -30px; z-index: 0;
+  background: url('assets/gamestart.jpg') center / cover no-repeat;
+  filter: blur(30px) brightness(0.5) saturate(1.15);
+}
 .image-screen-full {
-  position: relative;
+  position: relative; z-index: 1;
   width: min(100vw, calc(100vh * var(--ar)));
   aspect-ratio: var(--ar);
 }
