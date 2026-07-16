@@ -210,18 +210,6 @@ button { font-family: inherit; }
   50% { box-shadow: 0 0 22px 8px rgba(255,240,120,0.6); }
 }
 
-.xp-action-btn {
-  background: linear-gradient(180deg, #fdfdfd, #d8d5c5);
-  border: 1px solid #888; border-radius: 3px; padding: 8px 18px;
-  font-weight: bold; font-size: 12px; cursor: pointer; color: #111;
-}
-.xp-action-btn:hover { border-color: var(--xp-blue); }
-.xp-action-btn:active { transform: translateY(1px); }
-.xp-action-btn-secondary { color: #555; font-weight: normal; }
-.xp-action-btn:disabled { color: #999; cursor: not-allowed; opacity: 0.6; }
-.xp-action-btn:disabled:hover { border-color: #888; }
-.xp-action-btn:disabled:active { transform: none; }
-
 /* ============ CAPTCHA / VERIFY PANEL (capture + scan) ============ */
 .verification-stage {
   width: 100%; max-width: 800px; margin: 0 auto;
@@ -670,7 +658,7 @@ aside#user-panel {
   position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
   background: rgba(6,10,26,0.94);
 }
-#epilogue-status, #epilogue-teaser { display: flex; flex-direction: column; align-items: center; }
+#epilogue-status, #epilogue-crash { display: flex; flex-direction: column; align-items: center; }
 #epilogue-heart { font-size: 44px; animation: heartBeat 1s ease-in-out infinite; }
 @keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 #epilogue-label { margin-top: 16px; font-size: clamp(9px, 1.8vw, 12px); letter-spacing: 2px; color: #9fd8ff; opacity: 0.9; }
@@ -683,28 +671,42 @@ aside#user-panel {
 #epilogue-status.fade-out { animation: epilogueFadeOut 0.5s ease forwards; }
 @keyframes epilogueFadeOut { to { opacity: 0; transform: scale(0.9); } }
 
-#teaser-glitch-text {
-  position: relative; font-size: clamp(14px, 3vw, 24px); color: #fff;
-  animation: glitchIn 0.5s steps(2) both, glitchFlicker 2.4s steps(2) 0.5s infinite;
-}
-#teaser-glitch-text::before, #teaser-glitch-text::after {
-  content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%;
-}
-#teaser-glitch-text::before { color: #ff2b6b; mix-blend-mode: screen; animation: glitchSlice 2.4s steps(2) infinite; }
-#teaser-glitch-text::after { color: #2bd7ff; mix-blend-mode: screen; animation: glitchSlice 2.4s steps(2) infinite reverse; }
-@keyframes glitchIn { 0% { opacity: 0; letter-spacing: 6px; } 100% { opacity: 1; letter-spacing: 1px; } }
-@keyframes glitchFlicker { 0%, 94%, 100% { opacity: 1; } 95% { opacity: 0.6; } 97% { opacity: 0.4; } 98% { opacity: 1; } }
-@keyframes glitchSlice {
-  0%, 90%, 100% { clip-path: inset(0 0 0 0); transform: translate(0, 0); }
-  91% { clip-path: inset(10% 0 60% 0); transform: translate(-3px, 0); }
-  93% { clip-path: inset(60% 0 5% 0); transform: translate(3px, 0); }
-  95% { clip-path: inset(30% 0 40% 0); transform: translate(-2px, 0); }
-}
-#teaser-sub {
-  margin-top: 18px; font-size: clamp(9px, 2vw, 13px); color: #ffd23f; letter-spacing: 3px;
-  animation: teaserSubBlink 1s steps(1) infinite;
+#crash-loading-text {
+  font-size: clamp(14px, 3vw, 22px); color: #fff; letter-spacing: 2px;
+  animation: teaserSubBlink 0.6s steps(1) infinite;
 }
 @keyframes teaserSubBlink { 50% { opacity: 0.3; } }
+#crash-loading-bar {
+  margin-top: 18px; width: min(220px, 60vw); height: 18px; background: #000; border: 2px solid #fff; overflow: hidden;
+}
+#crash-loading-fill {
+  width: 40%; height: 100%;
+  background: repeating-linear-gradient(90deg, #2bd7ff 0 10px, #0a6fb0 10px 20px);
+  animation: crashLoadingSlide 0.9s linear infinite;
+}
+@keyframes crashLoadingSlide { from { transform: translateX(-140%); } to { transform: translateX(280%); } }
+
+#crash-cursor { width: 28px; height: 28px; position: relative; animation: crashCursorIdle 1.4s ease-in-out infinite; }
+#crash-cursor::before {
+  content: ''; position: absolute; inset: 0; background: #fff;
+  clip-path: polygon(0% 0%, 0% 72%, 22% 56%, 38% 100%, 54% 92%, 36% 52%, 68% 50%);
+  filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000);
+}
+@keyframes crashCursorIdle { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, 3px); } }
+#crash-message {
+  margin-top: 20px; font-size: clamp(10px, 2.2vw, 14px); color: #ff5f5f; letter-spacing: 1px; text-shadow: 2px 2px 0 #000;
+}
+#crash-sub {
+  margin-top: 10px; font-size: clamp(8px, 1.8vw, 11px); color: #aaa; letter-spacing: 1px;
+  animation: teaserSubBlink 1s steps(1) infinite;
+}
+
+/* the app content visibly hangs while the crash screen is up -- the
+   title bar (and its real close button) is left alone as the way out */
+#xp-window.app-frozen #xp-menubar,
+#xp-window.app-frozen .screen:not([hidden]) { filter: grayscale(0.7) brightness(0.9); }
+#xp-window.app-frozen #xp-close { animation: crashCloseHint 1s ease-in-out infinite; }
+@keyframes crashCloseHint { 50% { box-shadow: 0 0 10px 3px rgba(255,60,60,0.9); } }
 
 .puzzle-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
 .puzzle-board {

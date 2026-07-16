@@ -812,8 +812,11 @@
     $('judge-epilogue').hidden = true;
     $('epilogue-status').hidden = false;
     $('epilogue-status').classList.remove('fade-out');
-    $('epilogue-teaser').hidden = true;
-    $('btn-play-again').hidden = true;
+    $('epilogue-crash').hidden = true;
+    $('crash-loading').hidden = false;
+    $('crash-frozen').hidden = true;
+    $('xp-window').classList.remove('app-frozen');
+    $('xp-title-text').textContent = 'HumanVerify_Puzzle.exe — Attendance System';
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
   }
 
@@ -826,9 +829,16 @@
     $('epilogue-status').classList.add('fade-out');
     await sleep(500);
     $('epilogue-status').hidden = true;
-    $('epilogue-teaser').hidden = false;
-    speak('To be continued. Level two, incoming.');
-    await sleep(2200);
+
+    // fake a crash: a brief "loading", then the app hangs and only the
+    // real window close (X) button gets you back to the desktop
+    $('epilogue-crash').hidden = false;
+    await sleep(1300);
+
+    $('crash-loading').hidden = true;
+    $('crash-frozen').hidden = false;
+    $('xp-window').classList.add('app-frozen');
+    $('xp-title-text').textContent = 'HumanVerify_Puzzle.exe — Attendance System (Not Responding)';
   }
 
   async function showJudge() {
@@ -885,17 +895,10 @@
     $('winpose-loser-avatar').classList.add('fly');
     await sleep(1400);
 
+    // the app "crashes" here on the epilogue; only the real window close
+    // (X) button gets you back to the desktop from this point on
     await showEpilogue();
-    $('judge-epilogue').hidden = true;
-    $('btn-play-again').hidden = false;
   }
-
-  $('btn-play-again').addEventListener('click', () => {
-    stopGestureTracking();
-    activeBoard = null;
-    duelResolve = null;
-    enterCaptureScreen();
-  });
 
   // ---------------------------------------------------------
   // Gesture tracking (MediaPipe HandLandmarker) — single active
@@ -1174,6 +1177,8 @@
     Object.values(timers).forEach((t) => { if (t.raf) cancelAnimationFrame(t.raf); t.finished = true; });
     stopCamera();
     groupPhotoDataUrl = null;
+    $('xp-window').classList.remove('app-frozen');
+    $('xp-title-text').textContent = 'HumanVerify_Puzzle.exe — Attendance System';
     $('xp-window').hidden = true;
     $('xp-taskbar-task').hidden = true;
     showWelcomeIntro();
