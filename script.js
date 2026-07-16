@@ -799,10 +799,8 @@
     $('judge-bubble').style.opacity = '0';
     $('judge-confetti').innerHTML = '';
 
-    ['judge-ko-impact', 'judge-ko-splash'].forEach((id) => {
-      $(id).classList.remove('show', 'hide');
-      $(id).style.animation = ''; // release the koFrame*/forwards lock for the next round
-    });
+    $('judge-ko-splash').classList.remove('show', 'hide');
+    $('judge-ko-splash').style.animation = ''; // release the koFrame*/forwards lock for the next round
     $('judge-winpose').classList.remove('show');
     $('winpose-winner-avatar').style.animation = '';
     $('winpose-loser-avatar').classList.remove('fly');
@@ -860,17 +858,11 @@
     dog.style.opacity = '0';
     $('judge-stage').style.opacity = '0'; // the K.O. frames below fade to transparent, don't let this bleed through
 
-    // FRAME 1: real punch-impact screenshot -- the loser gets launched
+    // FRAME: real "K.O." splash graphic -- the punch lands
     flashScreen();
     shakeStage();
     playKoImpact();
-    $('judge-ko-impact').classList.add('show');
-    await sleep(750);
-
-    // FRAME 2: real "K.O." splash graphic, replacing the impact frame
-    $('judge-ko-impact').classList.add('hide');
     $('judge-ko-splash').classList.add('show');
-    flashScreen();
     await sleep(750);
 
     // FRAME 3: winner reveal on the real "raises fist" character art, with

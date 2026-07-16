@@ -533,12 +533,11 @@ aside#user-panel {
     repeating-conic-gradient(from 0deg, rgba(255,205,90,0.22) 0deg 4deg, transparent 4deg 12deg),
     radial-gradient(circle at 50% 42%, #ffb454 0%, #ff6a3d 28%, #b8272c 62%, #300808 100%);
 }
-/* ---- JUDGE: real K.O. fight-sequence screenshots, 1:1 assets ---- */
+/* ---- JUDGE: real K.O. splash screenshot, 1:1 asset ---- */
 .judge-ko-frame {
   position: absolute; inset: 0; z-index: 48; pointer-events: none;
   background-size: cover; background-position: center; opacity: 0;
 }
-#judge-ko-impact { background-image: url('assets/ko-impact.jpg'); }
 #judge-ko-splash { background-image: url('assets/ko-splash.jpg'); }
 .judge-ko-frame.show { animation: koFramePop 0.45s cubic-bezier(.2,1.7,.4,1) forwards; }
 .judge-ko-frame.hide { animation: koFrameOut 0.25s ease-in forwards; }
