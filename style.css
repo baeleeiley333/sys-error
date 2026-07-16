@@ -512,14 +512,15 @@ aside#user-panel {
 /* ---- JUDGE: Windows system message + winner/loser ---- */
 #judge-stage { display: flex; flex-direction: column; align-items: center; gap: 22px; width: 100%; transition: opacity 0.3s ease; }
 
-/* a real classic-XP message box instead of a cartoon dog + speech bubble */
-#judge-msgbox {
+/* a real classic-XP message box, reused for both the "YOU BOTH DID GREAT"
+   announcement and the relationship-status reveal */
+.win-msgbox {
   background: var(--xp-gray); border: 1px solid var(--xp-blue-dark); border-radius: 6px 6px 2px 2px;
   box-shadow: 3px 5px 16px rgba(0,0,0,0.5); width: min(380px, 88vw); overflow: hidden;
   opacity: 0; transform: translateY(-18px) scale(0.9);
 }
-#judge-msgbox.show { animation: msgboxIn 0.4s cubic-bezier(.3,1.6,.4,1) forwards; }
-#judge-msgbox.hide { animation: msgboxOut 0.3s ease-in forwards; }
+.win-msgbox.show { animation: msgboxIn 0.4s cubic-bezier(.3,1.6,.4,1) forwards; }
+.win-msgbox.hide { animation: msgboxOut 0.3s ease-in forwards; }
 @keyframes msgboxIn { to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes msgboxOut { to { opacity: 0; transform: translateY(-10px) scale(0.94); } }
 .msgbox-titlebar {
@@ -665,7 +666,7 @@ aside#user-panel {
 }
 #winpose-win-label {
   font-size: clamp(48px, 13vw, 128px); color: #ffd23f; -webkit-text-stroke: 5px #7a3d00; paint-order: stroke fill;
-  text-shadow: 5px 5px 0 #7a3d00, 0 0 32px rgba(255,210,60,0.7); letter-spacing: 1px; margin-top: -8px; line-height: 0.9;
+  text-shadow: 5px 5px 0 #7a3d00, 0 0 32px rgba(255,210,60,0.7); letter-spacing: 1px; margin-top: 14px; line-height: 0.9;
 }
 
 #winpose-times {
@@ -706,18 +707,21 @@ aside#user-panel {
   position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
   background: rgba(6,10,26,0.94);
 }
-#epilogue-status, #epilogue-crash { display: flex; flex-direction: column; align-items: center; }
-#epilogue-heart { font-size: 44px; animation: heartBeat 1s ease-in-out infinite; }
+#epilogue-crash { display: flex; flex-direction: column; align-items: center; }
+
+/* relationship-status reveal, styled as the same classic-XP message box */
+#epilogue-status.show { animation: msgboxIn 0.4s cubic-bezier(.3,1.6,.4,1) forwards; }
+#epilogue-status.fade-out { animation: epilogueFadeOut 0.4s ease-in forwards; }
+@keyframes epilogueFadeOut { to { opacity: 0; transform: translateY(-10px) scale(0.94); } }
+#epilogue-heart { font-size: 26px; animation: heartBeat 1s ease-in-out infinite; }
 @keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
-#epilogue-label { margin-top: 16px; font-size: clamp(9px, 1.8vw, 12px); letter-spacing: 2px; color: #9fd8ff; opacity: 0.9; }
+.epilogue-text-col { display: flex; flex-direction: column; text-align: left; }
+#epilogue-label { font-size: clamp(8px, 1.6vw, 10px); letter-spacing: 1.5px; color: #555; }
 #epilogue-value {
-  margin-top: 10px; font-size: clamp(20px, 4vw, 34px); color: #ff6bd6; letter-spacing: 1px;
-  text-shadow: 0 0 16px rgba(255,107,214,0.8);
+  margin-top: 5px; font-size: clamp(16px, 3.2vw, 24px); color: #c2185b; letter-spacing: 0.5px;
   animation: valuePop 0.5s cubic-bezier(.2,1.6,.4,1) both;
 }
 @keyframes valuePop { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
-#epilogue-status.fade-out { animation: epilogueFadeOut 0.5s ease forwards; }
-@keyframes epilogueFadeOut { to { opacity: 0; transform: scale(0.9); } }
 
 #crash-loading-text {
   font-size: clamp(14px, 3vw, 22px); color: #fff; letter-spacing: 2px;

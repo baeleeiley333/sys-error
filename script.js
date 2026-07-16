@@ -811,7 +811,8 @@
 
     $('judge-epilogue').hidden = true;
     $('epilogue-status').hidden = false;
-    $('epilogue-status').classList.remove('fade-out');
+    $('epilogue-status').classList.remove('show', 'fade-out');
+    $('epilogue-status').style.animation = '';
     $('epilogue-crash').hidden = true;
     $('crash-loading').hidden = false;
     $('crash-frozen').hidden = true;
@@ -823,6 +824,7 @@
   async function showEpilogue() {
     const epilogue = $('judge-epilogue');
     epilogue.hidden = false;
+    $('epilogue-status').classList.add('show');
     speak('Relationship status: teammates!');
     await sleep(2200);
 
