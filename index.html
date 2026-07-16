@@ -219,35 +219,48 @@
         </div>
       </section>
 
-      <!-- ============ SCREEN: JUDGE (Roger the dog + fight-game K.O.) ============ -->
+      <!-- ============ SCREEN: JUDGE (Roger the dog intro + real K.O. fight-scene assets) ============ -->
       <section class="screen pixel-screen" id="screen-judge" hidden>
         <div id="judge-flash" aria-hidden="true"></div>
         <div id="judge-confetti" aria-hidden="true"></div>
-        <div id="judge-ko-text" aria-hidden="true">K.O.</div>
-        <div id="judge-winner-banner"><span id="judge-winner-text"></span></div>
         <div id="judge-stage">
           <div id="judge-bubble"><span id="judge-bubble-text"></span></div>
           <div id="judge-dog"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
           <div id="judge-avatars">
             <div class="judge-avatar-slot">
-              <div class="winner-burst" aria-hidden="true"></div>
-              <div class="judge-fighter" aria-hidden="true">🥊</div>
-              <div class="judge-crown" id="judge-crown-1">👑</div>
               <div class="judge-avatar" id="judge-avatar-1"></div>
               <div class="judge-name p1-color">PLAYER 1</div>
               <div class="judge-time" id="judge-time-1">--:--.-</div>
             </div>
             <div class="judge-avatar-slot">
-              <div class="winner-burst" aria-hidden="true"></div>
-              <div class="judge-fighter" aria-hidden="true">🥊</div>
-              <div class="judge-crown" id="judge-crown-2">👑</div>
               <div class="judge-avatar" id="judge-avatar-2"></div>
               <div class="judge-name p2-color">PLAYER 2</div>
               <div class="judge-time" id="judge-time-2">--:--.-</div>
             </div>
           </div>
-          <div id="judge-glass" aria-hidden="true">🍷</div>
         </div>
+
+        <!-- real fight-game screenshots, 1:1 -->
+        <div class="judge-ko-frame" id="judge-ko-impact" aria-hidden="true"></div>
+        <div class="judge-ko-frame" id="judge-ko-splash" aria-hidden="true"></div>
+
+        <!-- winner reveal: real character art + our own dynamic text/photos -->
+        <div id="judge-winpose" aria-hidden="true">
+          <div id="winpose-character">
+            <div id="winpose-winner-avatar"></div>
+          </div>
+          <div id="winpose-loser-avatar"></div>
+          <div id="winpose-text">
+            <span id="winpose-player-label">PLAYER 1</span>
+            <span id="winpose-win-label">WIN</span>
+          </div>
+          <div id="winpose-times">
+            <div class="winpose-time-col p1-color"><span>PLAYER 1</span><b id="winpose-time-1">--:--.-</b></div>
+            <div id="winpose-glass" aria-hidden="true">🍷</div>
+            <div class="winpose-time-col p2-color"><span>PLAYER 2</span><b id="winpose-time-2">--:--.-</b></div>
+          </div>
+        </div>
+
         <div id="judge-epilogue" hidden>
           <div id="epilogue-status">
             <div id="epilogue-heart">💞</div>

@@ -791,22 +791,25 @@
   }
 
   function resetJudgeVisualState() {
-    [1, 2].forEach((p) => {
-      $('judge-avatar-' + p).classList.remove('winner', 'loser');
-      $('judge-avatar-' + p).style.animation = ''; // release the loserFly*/forwards lock for the next round
-      $('judge-crown-' + p).classList.remove('show');
-    });
-    document.querySelectorAll('.judge-avatar-slot').forEach((el) => el.classList.remove('winner-slot'));
-    document.querySelectorAll('.judge-fighter').forEach((el) => el.classList.remove('punch'));
+    $('judge-stage').style.opacity = '1';
     const dog = $('judge-dog');
     dog.style.opacity = '1';
+    dog.style.animation = ''; // release the dogHop forwards lock for the next round
     dog.classList.remove('bounce');
     $('judge-bubble').style.opacity = '0';
     $('judge-confetti').innerHTML = '';
-    $('judge-ko-text').classList.remove('show');
-    $('judge-glass').classList.remove('show');
-    $('judge-winner-banner').classList.remove('show');
-    $('judge-winner-text').textContent = '';
+
+    ['judge-ko-impact', 'judge-ko-splash'].forEach((id) => {
+      $(id).classList.remove('show', 'hide');
+      $(id).style.animation = ''; // release the koFrame*/forwards lock for the next round
+    });
+    $('judge-winpose').classList.remove('show');
+    $('winpose-winner-avatar').style.animation = '';
+    $('winpose-loser-avatar').classList.remove('fly');
+    $('winpose-loser-avatar').style.animation = '';
+    $('winpose-text').style.animation = '';
+    $('winpose-times').style.animation = '';
+
     $('judge-epilogue').hidden = true;
     $('epilogue-status').hidden = false;
     $('epilogue-status').classList.remove('fade-out');
@@ -855,34 +858,40 @@
     dog.classList.remove('bounce');
     dog.style.animation = 'none'; // release the dogHop fill-forwards lock so opacity below actually takes
     dog.style.opacity = '0';
+    $('judge-stage').style.opacity = '0'; // the K.O. frames below fade to transparent, don't let this bleed through
 
-    // a fighter suddenly dashes in and lands the punch on the loser
-    const fighter = $('judge-avatar-' + loser).closest('.judge-avatar-slot').querySelector('.judge-fighter');
-    fighter.classList.add('punch');
-    await sleep(230);
-
+    // FRAME 1: real punch-impact screenshot -- the loser gets launched
     flashScreen();
     shakeStage();
     playKoImpact();
-    $('judge-avatar-' + loser).classList.add('loser'); // sent flying toward the glass
-    $('judge-glass').classList.add('show');
+    $('judge-ko-impact').classList.add('show');
+    await sleep(750);
+
+    // FRAME 2: real "K.O." splash graphic, replacing the impact frame
+    $('judge-ko-impact').classList.add('hide');
+    $('judge-ko-splash').classList.add('show');
+    flashScreen();
+    await sleep(750);
+
+    // FRAME 3: winner reveal on the real "raises fist" character art, with
+    // our own dynamic PLAYER X WIN text + real avatar photos composited on
+    // top (the reference image's own text/photos were layout reference only)
+    $('judge-ko-splash').classList.add('hide');
+    $('winpose-winner-avatar').style.backgroundImage = `url(${players[winner].avatar})`;
+    $('winpose-loser-avatar').style.backgroundImage = `url(${players[loser].avatar})`;
+    $('winpose-player-label').textContent = `PLAYER ${winner}`;
+    $('winpose-time-1').textContent = formatTime(timers[1].elapsed);
+    $('winpose-time-2').textContent = formatTime(timers[2].elapsed);
+    $('judge-winpose').classList.add('show');
     spawnConfetti();
-    await sleep(500);
-
-    // the punch lands -- K.O.!
-    $('judge-ko-text').classList.add('show');
-    await sleep(500);
-
-    // winner gets crowned and announced
-    $('judge-avatar-' + winner).classList.add('winner');
-    $('judge-crown-' + winner).classList.add('show');
-    $('judge-avatar-' + winner).closest('.judge-avatar-slot').classList.add('winner-slot');
-    $('judge-winner-text').textContent = `PLAYER ${winner} WINS!`;
-    $('judge-winner-banner').classList.add('show');
     playWinFanfare();
     speak(`Player ${winner} wins!`);
+    await sleep(550);
 
-    await sleep(1600);
+    // FRAME 4: the loser's own avatar, grayed out and kicked away
+    $('winpose-loser-avatar').classList.add('fly');
+    await sleep(1400);
+
     await showEpilogue();
     $('judge-epilogue').hidden = true;
     $('btn-play-again').hidden = false;
