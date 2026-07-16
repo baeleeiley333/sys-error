@@ -734,6 +734,7 @@
     $('duel-winflag').classList.remove('show');
     $('duel-manual-toggle').classList.remove('active');
     $('duel-manual-toggle').textContent = '🖱 Manual Mode';
+    $('reference-thumb').style.backgroundImage = `url(${groupPhotoDataUrl})`;
     activeBoard = new PuzzleBoard($('duel-board'), playerId, groupPhotoDataUrl);
   }
 

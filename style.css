@@ -464,15 +464,19 @@ aside#user-panel {
 #duel-hud-name { font-size: 11px; font-weight: bold; letter-spacing: 1px; }
 .wmp-status { font-size: 9px; color: #3a6199; }
 
-/* pic_puzzle.exe: the enlarged, actually-playable puzzle window (real title bar screenshot) */
+/* pic_puzzle.exe: the enlarged, actually-playable puzzle window (real title bar screenshot),
+   wrapped in the same Windows-XP window chrome as the outer app frame */
 #puzzle-window {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: auto;
-  width: min(520px, 94vw); background: var(--xp-gray); border: 1px solid #6b6b6b;
+  width: min(520px, 94vw); background: var(--xp-gray);
+  border: 1px solid var(--xp-blue-dark); border-radius: 8px 8px 3px 3px; overflow: hidden;
   box-shadow: 4px 6px 20px rgba(0,0,0,0.55);
 }
 .puzzle-window-titlebar {
   height: clamp(24px, 5.4vw, 34px);
-  background: linear-gradient(180deg, #3a78d8, #1c50a8) url('assets/puzzle-window-titlebar.png') center / 100% 100% no-repeat;
+  background-color: #1c50a8;
+  background-image: url('assets/puzzle-window-titlebar.png');
+  background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
 }
 .puzzle-window-body {
   background: var(--xp-gray); padding: 18px; display: flex; flex-direction: column; align-items: center;
@@ -501,6 +505,17 @@ aside#user-panel {
   flex: 0 0 auto; width: 96px; display: flex; flex-direction: column; gap: 6px;
   background: #111; border: 1px solid #444; padding: 8px 6px; color: #ccc;
   font-size: 8px; line-height: 1.4; text-align: left;
+}
+
+/* small reference thumbnail of the fully-restored photo, under the gesture guide */
+#reference-thumb-wrap {
+  margin-top: 4px; padding-top: 8px; border-top: 1px dashed #444;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.reference-thumb-label { font-size: 7px; letter-spacing: 0.5px; color: var(--accent-green); }
+#reference-thumb {
+  width: 100%; aspect-ratio: 1/1; background-size: cover; background-position: center;
+  background-color: #222; border: 2px solid #fff; box-shadow: 0 0 0 1px #444;
 }
 .gesture-guide-icon { font-size: 15px; text-align: center; white-space: nowrap; }
 .gesture-guide-step b { color: var(--accent-cyan); }
