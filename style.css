@@ -415,8 +415,12 @@ aside#user-panel {
 @keyframes vsTextIn { to { opacity: 1; } }
 @keyframes vsPulse { 50% { transform: scale(1.15); } }
 
-/* ---- DUEL: turn intro (avatar jump / glow / enlarge) ---- */
-#duel-intro { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+/* ---- DUEL: turn intro (avatar jump / glow / enlarge), blue-sky backdrop ---- */
+#duel-intro {
+  position: absolute; inset: 0; z-index: 1; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+  background: linear-gradient(180deg, #4fb8ff 0%, #8fd8ff 55%, #cdeeff 100%);
+}
 .hero-avatar {
   width: clamp(110px, 26vw, 200px); height: clamp(110px, 26vw, 200px); border-radius: 50%;
   background-size: cover; background-position: center; background-color: #222; border: 6px solid #fff;
@@ -432,7 +436,11 @@ aside#user-panel {
   62% { transform: scale(0.95) translateY(0); }
   100% { transform: scale(1.45) translateY(0); box-shadow: 0 0 40px currentColor; }
 }
-#duel-intro-text { font-size: clamp(12px, 3vw, 20px); letter-spacing: 1px; animation: blinker 0.7s steps(1) 3; }
+#duel-intro-text {
+  font-size: clamp(15px, 3.8vw, 25px); letter-spacing: 1px; margin-top: 18px;
+  color: #fff; -webkit-text-stroke: 3px #000; paint-order: stroke fill; text-shadow: 3px 3px 0 #000;
+  animation: blinker 0.7s steps(1) 3;
+}
 
 /* ---- DUEL: play — a tiny "now playing" widget pinned bottom-right,
    plus the actual puzzle enlarged in its own floating window ---- */
