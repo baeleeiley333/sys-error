@@ -84,6 +84,18 @@
   const playWinFanfare = () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'square', 0.12), i * 110));
   const playGameStartFanfare = () => [392, 523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.16, 'square', 0.13), i * 90));
   const playVsSting = () => [220, 174].forEach((f, i) => setTimeout(() => beep(f, 0.22, 'sawtooth', 0.1), i * 130));
+  const playVsFanfare = () => {
+    // a bouncy major-key arpeggio, Mario-"level select"-ish
+    const notes = [
+      [523, 0.11], [659, 0.11], [784, 0.11], [1046, 0.2],
+      [880, 0.11], [1046, 0.32],
+    ];
+    let t = 0;
+    notes.forEach(([freq, dur]) => {
+      setTimeout(() => beep(freq, dur, 'square', 0.13), t * 1000);
+      t += dur * 0.82;
+    });
+  };
 
   function speak(text, opts = {}) {
     try {
@@ -671,11 +683,15 @@
     showScreen('vs');
     $('vs-avatar-1').style.backgroundImage = `url(${players[1].avatar})`;
     $('vs-avatar-2').style.backgroundImage = `url(${players[2].avatar})`;
+    document.querySelectorAll('.vs-cloud').forEach(restartAnimation);
     restartAnimation(document.querySelector('.vs-side-1'));
     restartAnimation(document.querySelector('.vs-side-2'));
+    restartAnimation(document.querySelector('.vs-side-1 .vs-ready'));
+    restartAnimation(document.querySelector('.vs-side-2 .vs-ready'));
+    restartAnimation($('vs-heart'));
     restartAnimation($('vs-text'));
-    playVsSting();
-    await sleep(2400);
+    playVsFanfare();
+    await sleep(2800);
   }
 
   async function runPlayerTurn(playerId) {

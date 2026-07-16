@@ -142,28 +142,31 @@
 
       <!-- ============ SCREEN: VS INTRO ============ -->
       <section class="screen pixel-screen" id="screen-vs" hidden>
+        <div id="vs-sky" aria-hidden="true">
+          <div class="vs-cloud vs-cloud-1"></div>
+          <div class="vs-cloud vs-cloud-2"></div>
+          <div class="vs-cloud vs-cloud-3"></div>
+          <div class="vs-hills"></div>
+        </div>
         <div id="vs-header">PLAYER 1 &amp; PLAYER 2</div>
-        <svg id="vs-controller" viewBox="0 0 200 110" width="140" height="77" aria-hidden="true">
-          <rect x="10" y="20" width="180" height="70" rx="35" fill="#000" stroke="#fff" stroke-width="4" />
-          <path d="M20 60 Q0 100 30 100 Q45 100 45 75" fill="#000" stroke="#fff" stroke-width="4" />
-          <path d="M180 60 Q200 100 170 100 Q155 100 155 75" fill="#000" stroke="#fff" stroke-width="4" />
-          <rect x="45" y="48" width="10" height="26" fill="#fff" />
-          <rect x="35" y="58" width="30" height="10" fill="#fff" />
-          <circle cx="145" cy="45" r="7" fill="#3aa0ff" />
-          <circle cx="160" cy="60" r="7" fill="#3aa0ff" />
-          <circle cx="130" cy="60" r="7" fill="#e0453f" />
-          <circle cx="145" cy="75" r="7" fill="#8a4bd6" />
-          <circle cx="100" cy="60" r="4" fill="#fff" />
-        </svg>
         <div id="vs-stage">
           <div class="vs-side vs-side-1">
-            <div class="vs-avatar" id="vs-avatar-1"></div>
+            <div class="vs-frame">
+              <div class="vs-avatar" id="vs-avatar-1"></div>
+            </div>
             <div class="vs-label p1-color">PLAYER 1</div>
+            <div class="vs-ready p1-color">READY</div>
           </div>
-          <div id="vs-text">VS</div>
+          <div class="vs-center">
+            <div id="vs-heart" aria-hidden="true">💗</div>
+            <div id="vs-text">VS</div>
+          </div>
           <div class="vs-side vs-side-2">
-            <div class="vs-avatar" id="vs-avatar-2"></div>
+            <div class="vs-frame">
+              <div class="vs-avatar" id="vs-avatar-2"></div>
+            </div>
             <div class="vs-label p2-color">PLAYER 2</div>
+            <div class="vs-ready p2-color">READY</div>
           </div>
         </div>
       </section>
