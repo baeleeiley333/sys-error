@@ -797,6 +797,7 @@
       $('judge-crown-' + p).classList.remove('show');
     });
     document.querySelectorAll('.judge-avatar-slot').forEach((el) => el.classList.remove('winner-slot'));
+    document.querySelectorAll('.judge-fighter').forEach((el) => el.classList.remove('punch'));
     const dog = $('judge-dog');
     dog.style.opacity = '1';
     dog.classList.remove('bounce');
@@ -855,17 +856,21 @@
     dog.style.animation = 'none'; // release the dogHop fill-forwards lock so opacity below actually takes
     dog.style.opacity = '0';
 
-    // the K.O. punch lands: flash, shake, impact text, glass appears
+    // a fighter suddenly dashes in and lands the punch on the loser
+    const fighter = $('judge-avatar-' + loser).closest('.judge-avatar-slot').querySelector('.judge-fighter');
+    fighter.classList.add('punch');
+    await sleep(230);
+
     flashScreen();
     shakeStage();
     playKoImpact();
-    $('judge-ko-text').classList.add('show');
+    $('judge-avatar-' + loser).classList.add('loser'); // sent flying toward the glass
     $('judge-glass').classList.add('show');
-    await sleep(250);
-
-    // loser gets sent flying into the glass
-    $('judge-avatar-' + loser).classList.add('loser');
     spawnConfetti();
+    await sleep(500);
+
+    // the punch lands -- K.O.!
+    $('judge-ko-text').classList.add('show');
     await sleep(500);
 
     // winner gets crowned and announced
