@@ -226,21 +226,42 @@
         </div>
       </section>
 
-      <!-- ============ SCREEN: JUDGE (Roger the dog intro + real K.O. fight-scene assets) ============ -->
+      <!-- ============ SCREEN: JUDGE (Windows system message + real K.O. fight-scene assets) ============ -->
       <section class="screen pixel-screen" id="screen-judge" hidden>
         <div id="judge-flash" aria-hidden="true"></div>
         <div id="judge-confetti" aria-hidden="true"></div>
         <div id="judge-stage">
-          <div id="judge-bubble"><span id="judge-bubble-text"></span></div>
-          <div id="judge-dog"><img class="dog-icon" src="assets/dog.png" alt="" /></div>
+          <div id="judge-msgbox">
+            <div class="msgbox-titlebar">
+              <span class="msgbox-title-text">System Message</span>
+              <span class="msgbox-title-x">✕</span>
+            </div>
+            <div class="msgbox-body">
+              <svg class="msgbox-icon" viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="16" cy="16" r="15" fill="#fff" stroke="#1c5fd6" stroke-width="2"/>
+                <path d="M16 9 a4 4 0 1 1 -2.9 1.2" fill="none" stroke="#1c5fd6" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="16" cy="23" r="1.6" fill="#1c5fd6"/>
+              </svg>
+              <span id="judge-bubble-text"></span>
+            </div>
+            <div class="msgbox-footer"><span class="msgbox-ok-btn" tabindex="-1">OK</span></div>
+          </div>
           <div id="judge-avatars">
             <div class="judge-avatar-slot">
               <div class="judge-avatar" id="judge-avatar-1"></div>
+              <div class="judge-dizzy-face" id="judge-dizzy-1" aria-hidden="true">
+                <span class="dizzy-eye">@</span><span class="dizzy-eye">@</span>
+                <div class="dizzy-mouth"></div>
+              </div>
               <div class="judge-name p1-color">PLAYER 1</div>
               <div class="judge-time" id="judge-time-1">--:--.-</div>
             </div>
             <div class="judge-avatar-slot">
               <div class="judge-avatar" id="judge-avatar-2"></div>
+              <div class="judge-dizzy-face" id="judge-dizzy-2" aria-hidden="true">
+                <span class="dizzy-eye">@</span><span class="dizzy-eye">@</span>
+                <div class="dizzy-mouth"></div>
+              </div>
               <div class="judge-name p2-color">PLAYER 2</div>
               <div class="judge-time" id="judge-time-2">--:--.-</div>
             </div>

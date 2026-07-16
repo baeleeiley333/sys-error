@@ -753,11 +753,9 @@
   }
 
   // ---------------------------------------------------------
-  // Judge screen: Roger the dog crowns the winner
+  // Judge screen: a Windows system message announces the winner
   // ---------------------------------------------------------
   function setBubble(text) {
-    const bubble = $('judge-bubble');
-    bubble.style.opacity = '1';
     $('judge-bubble-text').textContent = text;
   }
 
@@ -793,11 +791,13 @@
 
   function resetJudgeVisualState() {
     $('judge-stage').style.opacity = '1';
-    const dog = $('judge-dog');
-    dog.style.opacity = '1';
-    dog.style.animation = ''; // release the dogHop forwards lock for the next round
-    dog.classList.remove('bounce');
-    $('judge-bubble').style.opacity = '0';
+    $('judge-msgbox').classList.remove('show', 'hide');
+    $('judge-msgbox').style.animation = ''; // release the msgbox*/forwards lock for the next round
+    [1, 2].forEach((p) => {
+      $('judge-avatar-' + p).classList.remove('power-up', 'power-down');
+      $('judge-avatar-' + p).style.animation = '';
+      $('judge-dizzy-' + p).classList.remove('show');
+    });
     $('judge-confetti').innerHTML = '';
 
     $('judge-ko-splash').classList.remove('show', 'hide');
@@ -849,24 +849,25 @@
     $('judge-time-1').textContent = formatTime(timers[1].elapsed);
     $('judge-time-2').textContent = formatTime(timers[2].elapsed);
 
-    const dog = $('judge-dog');
-    restartAnimation(dog);
-    await sleep(650);
-    dog.classList.add('bounce');
-
     setBubble("YOU BOTH DID GREAT...");
+    $('judge-msgbox').classList.add('show');
     await sleep(1400);
     setBubble('...BUT THERE CAN ONLY BE ONE WINNER!');
     await sleep(1600);
-    $('judge-bubble').style.opacity = '0';
+    $('judge-msgbox').classList.add('hide');
+    await sleep(300);
 
     const t1 = timers[1].elapsed, t2 = timers[2].elapsed;
     const winner = t1 === t2 ? (Math.random() < 0.5 ? 1 : 2) : (t1 < t2 ? 1 : 2);
     const loser = winner === 1 ? 2 : 1;
 
-    dog.classList.remove('bounce');
-    dog.style.animation = 'none'; // release the dogHop fill-forwards lock so opacity below actually takes
-    dog.style.opacity = '0';
+    // the winner balloons up and glows, the loser shrinks to grayscale and
+    // sees stars, right on the same avatars shown a moment ago
+    $('judge-avatar-' + winner).classList.add('power-up');
+    $('judge-avatar-' + loser).classList.add('power-down');
+    $('judge-dizzy-' + loser).classList.add('show');
+    await sleep(900);
+
     $('judge-stage').style.opacity = '0'; // the K.O. frames below fade to transparent, don't let this bleed through
 
     // FRAME: real "K.O." splash graphic -- the punch lands

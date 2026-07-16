@@ -509,24 +509,36 @@ aside#user-panel {
 .gesture-guide-step b { color: var(--accent-cyan); }
 .gesture-guide-note { color: #888; font-style: italic; font-size: 7px; }
 
-/* ---- JUDGE: Roger the dog + winner/loser ---- */
-#judge-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; transition: opacity 0.3s ease; }
-#judge-bubble {
-  background: #fff; color: #000; border-radius: 10px; padding: 14px 18px;
-  font-size: clamp(9px, 2.1vw, 13px); max-width: 340px; position: relative; opacity: 0; line-height: 1.6;
+/* ---- JUDGE: Windows system message + winner/loser ---- */
+#judge-stage { display: flex; flex-direction: column; align-items: center; gap: 22px; width: 100%; transition: opacity 0.3s ease; }
+
+/* a real classic-XP message box instead of a cartoon dog + speech bubble */
+#judge-msgbox {
+  background: var(--xp-gray); border: 1px solid var(--xp-blue-dark); border-radius: 6px 6px 2px 2px;
+  box-shadow: 3px 5px 16px rgba(0,0,0,0.5); width: min(380px, 88vw); overflow: hidden;
+  opacity: 0; transform: translateY(-18px) scale(0.9);
 }
-#judge-bubble::after {
-  content: ''; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
-  border: 8px solid transparent; border-top-color: #fff;
+#judge-msgbox.show { animation: msgboxIn 0.4s cubic-bezier(.3,1.6,.4,1) forwards; }
+#judge-msgbox.hide { animation: msgboxOut 0.3s ease-in forwards; }
+@keyframes msgboxIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes msgboxOut { to { opacity: 0; transform: translateY(-10px) scale(0.94); } }
+.msgbox-titlebar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, var(--xp-blue-light), var(--xp-blue) 55%, var(--xp-blue-dark));
+  padding: 4px 6px 4px 10px; font-size: 10px; color: #fff; font-weight: bold; letter-spacing: 0.5px;
 }
-.dog-icon { display: block; width: 100%; height: auto; }
-#judge-dog {
-  width: clamp(90px, 18vw, 150px); color: #6b4a2c;
-  animation: dogHop 0.6s cubic-bezier(.3,1.6,.4,1) both; transition: opacity 0.5s ease;
+.msgbox-title-x {
+  width: 16px; height: 15px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #f79b8f, #d5261a); border-radius: 2px; font-size: 8px;
 }
-@keyframes dogHop { 0% { transform: translateY(-120px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-#judge-dog.bounce { animation: dogBounce 0.6s ease-in-out infinite; }
-@keyframes dogBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.msgbox-body { display: flex; align-items: center; gap: 14px; padding: 18px 16px; }
+.msgbox-icon { width: 30px; height: 30px; flex-shrink: 0; }
+#judge-bubble-text { font-size: clamp(9px, 2vw, 12px); line-height: 1.6; color: #111; text-align: left; }
+.msgbox-footer { display: flex; justify-content: center; padding-bottom: 14px; }
+.msgbox-ok-btn {
+  background: linear-gradient(180deg, #fdfdfd, #d8d5c5); border: 1px solid #888; border-radius: 3px;
+  padding: 4px 22px; font-size: 10px; font-weight: bold; color: #111;
+}
 
 #judge-avatars { display: flex; gap: clamp(20px, 8vw, 76px); margin-top: 6px; }
 .judge-avatar-slot { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 0; }
@@ -537,6 +549,38 @@ aside#user-panel {
 }
 .judge-name { font-size: 9px; letter-spacing: 1px; }
 .judge-time { font-size: 9px; color: #999; font-variant-numeric: tabular-nums; }
+
+/* winner balloons up and glows; loser shrinks to grayscale, dazed */
+.judge-avatar.power-up { animation: avatarPowerUp 0.9s ease-in forwards; }
+@keyframes avatarPowerUp {
+  0% { transform: scale(1); filter: brightness(1) saturate(1); box-shadow: none; }
+  55% { transform: scale(1.3); filter: brightness(1.25) saturate(1.3); box-shadow: 0 0 22px 6px rgba(255,224,102,0.75); }
+  100% { transform: scale(1.55); filter: brightness(1.5) saturate(1.4); box-shadow: 0 0 42px 16px rgba(255,224,102,0.95); }
+}
+.judge-avatar.power-down { animation: avatarPowerDown 0.9s ease-in forwards; }
+@keyframes avatarPowerDown {
+  0% { transform: scale(1); filter: grayscale(0) brightness(1); opacity: 1; }
+  100% { transform: scale(0.62); filter: grayscale(1) brightness(0.65); opacity: 0.75; }
+}
+
+/* dazed "K.O.'d" spiral-eyes face, appears over the loser's avatar */
+.judge-dizzy-face {
+  position: absolute; top: -30px; left: 50%; transform: translateX(-50%) scale(0); z-index: 3;
+  display: flex; flex-direction: column; align-items: center; opacity: 0;
+}
+.judge-dizzy-face.show { animation: dizzyIn 0.35s cubic-bezier(.3,1.8,.4,1) forwards; }
+@keyframes dizzyIn { to { opacity: 1; transform: translateX(-50%) scale(1); } }
+.dizzy-eye {
+  display: inline-block; font-size: 17px; font-weight: bold; color: #fff;
+  -webkit-text-stroke: 1.5px #000; paint-order: stroke fill;
+  animation: dizzySpin 0.9s linear infinite;
+}
+.dizzy-eye:nth-child(2) { animation-direction: reverse; margin-left: 2px; }
+@keyframes dizzySpin { to { transform: rotate(360deg); } }
+.dizzy-mouth {
+  width: 14px; height: 7px; margin-top: 1px; border-radius: 0 0 14px 14px;
+  border: 2px solid #fff; border-top: none; box-shadow: 0 0 0 1px #000;
+}
 
 /* ---- JUDGE: fight-game radial burst instead of a flat black background ---- */
 #screen-judge {
