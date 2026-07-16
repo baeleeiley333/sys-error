@@ -753,8 +753,6 @@ aside#user-panel {
    title bar (and its real close button) is left alone as the way out */
 #xp-window.app-frozen #xp-menubar,
 #xp-window.app-frozen .screen:not([hidden]) { filter: grayscale(0.7) brightness(0.9); }
-#xp-window.app-frozen #xp-close { animation: crashCloseHint 1s ease-in-out infinite; }
-@keyframes crashCloseHint { 50% { box-shadow: 0 0 10px 3px rgba(255,60,60,0.9); } }
 
 .puzzle-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
 .puzzle-board {

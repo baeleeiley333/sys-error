@@ -1164,6 +1164,11 @@
   $('btn-close').addEventListener('click', resetAll);
   $('xp-max').addEventListener('click', () => $('xp-window').classList.toggle('maximized'));
 
+  // once the app "crashes" at the end, any key press closes it back to the desktop
+  document.addEventListener('keydown', () => {
+    if ($('xp-window').classList.contains('app-frozen')) resetAll();
+  });
+
   function resetAll() {
     handLoopActive = false;
     hideDragGhost();
